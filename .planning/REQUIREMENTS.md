@@ -64,7 +64,7 @@
 
 ### Security
 
-- [ ] **SEC-01**: Go-backend loggar aldrig API-nycklar eller Authorization-headers
+- [x] **SEC-01**: Go-backend loggar aldrig API-nycklar eller Authorization-headers
 - [ ] **SEC-02**: Invite-länkar är engångs och tidsbegränsade (atomisk invalidering)
 - [ ] **SEC-03**: GDPR-samtycke samlas in explicit vid föräldraregistrering
 
@@ -117,7 +117,7 @@
 | KEY-02 | Phase 1 | Pending |
 | KEY-03 | Phase 1 | Pending |
 | KEY-04 | Phase 1 | Pending |
-| SEC-01 | Phase 1 | Pending |
+| SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Pending |
 | SEC-03 | Phase 1 | Pending |
 | CONT-01 | Phase 2 | Pending |
