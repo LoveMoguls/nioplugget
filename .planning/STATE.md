@@ -63,6 +63,9 @@ Recent decisions affecting current work:
 - 01-01: Logger redacts at middleware level using header name denylist — no risk of accidentally logging secrets in handler code
 - 01-01: pgxpool configured with max 25 conns, min 5, 30s health check — tuned for moderate load
 - 01-01: sqlc with pgx/v5 driver and JSON tags — type-safe queries without ORM overhead
+- 01-02: ParentQuerier interface over *queries.Queries — enables test mocking without a live database
+- 01-02: Same 401 for unknown email and wrong password — prevents user enumeration attacks
+- 01-02: httpOnly + Secure + SameSite=Lax JWT cookie — XSS cannot steal token, CSRF mitigated via Lax same-site
 - [Phase 01-foundation]: APIKeyStore interface decouples handler from sqlc — enables unit testing without DB
 - [Phase 01-foundation]: Raw key never logged or returned — only masked format (sk-ant...****) in responses
 - [Phase 01-foundation]: QueriesStore adapter in store.go keeps handler independent of sqlc implementation details
@@ -81,5 +84,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 01-03-PLAN.md — AES-256-GCM encryption service, API key validation, CRUD handlers
+Stopped at: Completed 01-02-PLAN.md — Argon2id hashing, JWT session management, register/login/logout handlers
 Resume file: None

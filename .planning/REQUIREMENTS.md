@@ -7,9 +7,9 @@
 
 ### Authentication
 
-- [ ] **AUTH-01**: Förälder kan registrera sig med e-post och lösenord
-- [ ] **AUTH-02**: Förälder kan logga in och sessionen bevaras över sidladdning
-- [ ] **AUTH-03**: Förälder kan logga ut
+- [x] **AUTH-01**: Förälder kan registrera sig med e-post och lösenord
+- [x] **AUTH-02**: Förälder kan logga in och sessionen bevaras över sidladdning
+- [x] **AUTH-03**: Förälder kan logga ut
 - [ ] **AUTH-04**: Förälder kan skapa barnprofil med namn
 - [ ] **AUTH-05**: System genererar en engångs-invite-länk (tidsbegränsad) för barnprofilen
 - [ ] **AUTH-06**: Barn kan aktivera konto via invite-länk och välja PIN-kod
@@ -66,7 +66,7 @@
 
 - [x] **SEC-01**: Go-backend loggar aldrig API-nycklar eller Authorization-headers
 - [ ] **SEC-02**: Invite-länkar är engångs och tidsbegränsade (atomisk invalidering)
-- [ ] **SEC-03**: GDPR-samtycke samlas in explicit vid föräldraregistrering
+- [x] **SEC-03**: GDPR-samtycke samlas in explicit vid föräldraregistrering
 
 ## v2 Requirements
 
@@ -105,9 +105,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
 | AUTH-04 | Phase 1 | Pending |
 | AUTH-05 | Phase 1 | Pending |
 | AUTH-06 | Phase 1 | Pending |
@@ -119,7 +119,7 @@
 | KEY-04 | Phase 1 | Complete |
 | SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
+| SEC-03 | Phase 1 | Complete |
 | CONT-01 | Phase 2 | Pending |
 | CONT-02 | Phase 2 | Pending |
 | CONT-03 | Phase 2 | Pending |
