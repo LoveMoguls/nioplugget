@@ -9,10 +9,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/database"
+	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
 )
 
@@ -23,7 +26,7 @@ func main() {
 
 	// Load required env vars
 	databaseURL := mustEnv("DATABASE_URL")
-	_ = mustEnv("JWT_SECRET")
+	jwtSecret := mustEnv("JWT_SECRET")
 	_ = mustEnv("ENCRYPTION_KEY")
 
 	port := os.Getenv("PORT")
@@ -40,6 +43,15 @@ func main() {
 	defer pool.Close()
 	log.Info().Msg("database pool established")
 
+	// Initialize JWT auth
+	tokenAuth := auth.NewTokenAuth(jwtSecret)
+
+	// Initialize database queries
+	q := queries.New(pool)
+
+	// Initialize auth handler
+	authHandler := auth.NewAuthHandler(q, tokenAuth)
+
 	// Build router
 	r := chi.NewRouter()
 
@@ -54,12 +66,20 @@ func main() {
 		fmt.Fprint(w, "ok")
 	})
 
-	// Placeholder route groups
+	// Auth routes (public)
 	r.Route("/api/auth", func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotImplemented)
+		r.Post("/register", authHandler.Register)
+		r.Post("/login", authHandler.Login)
+
+		// Protected: logout requires valid parent JWT
+		r.Group(func(r chi.Router) {
+			r.Use(jwtauth.Verifier(tokenAuth))
+			r.Use(jwtauth.Authenticator(tokenAuth))
+			r.Use(auth.ParentOnly)
+			r.Post("/logout", authHandler.Logout)
 		})
 	})
+
 	r.Route("/api/apikey", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotImplemented)
