@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS pin_attempts;
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS parents;
