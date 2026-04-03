@@ -73,6 +73,24 @@ export const invite = {
 		}),
 };
 
+// Content
+export const content = {
+	subjects: () => apiFetch('/api/subjects'),
+	topics: (subjectSlug: string) => apiFetch(`/api/subjects/${subjectSlug}/topics`),
+	exercises: (subjectSlug: string, topicSlug: string) =>
+		apiFetch(`/api/topics/${subjectSlug}/${topicSlug}/exercises`),
+};
+
+// Sessions
+export const sessions = {
+	create: (exerciseId: string) =>
+		apiFetch('/api/sessions', { method: 'POST', body: JSON.stringify({ exerciseId }) }),
+	get: (sessionId: string) => apiFetch(`/api/sessions/${sessionId}`),
+	end: (sessionId: string) =>
+		apiFetch(`/api/sessions/${sessionId}/end`, { method: 'POST' }),
+	messages: (sessionId: string) => apiFetch(`/api/sessions/${sessionId}/messages`),
+};
+
 // Child auth
 export const childAuth = {
 	names: (parentEmail: string) =>

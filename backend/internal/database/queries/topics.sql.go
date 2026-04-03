@@ -16,8 +16,8 @@ SELECT t.id, t.subject_id, t.name, t.slug, t.display_order FROM topics t JOIN su
 `
 
 type GetTopicBySlugParams struct {
-	Slug   string `json:"slug"`
-	Slug_2 string `json:"slug_2"`
+	SubjectSlug string `json:"subject_slug"`
+	TopicSlug   string `json:"topic_slug"`
 }
 
 type GetTopicBySlugRow struct {
@@ -29,7 +29,7 @@ type GetTopicBySlugRow struct {
 }
 
 func (q *Queries) GetTopicBySlug(ctx context.Context, arg GetTopicBySlugParams) (GetTopicBySlugRow, error) {
-	row := q.db.QueryRow(ctx, getTopicBySlug, arg.Slug, arg.Slug_2)
+	row := q.db.QueryRow(ctx, getTopicBySlug, arg.SubjectSlug, arg.TopicSlug)
 	var i GetTopicBySlugRow
 	err := row.Scan(
 		&i.ID,

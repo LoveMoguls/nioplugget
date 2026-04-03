@@ -15,7 +15,9 @@ import (
 
 	"github.com/trollstaven/nioplugget/backend/internal/apikey"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
+	"github.com/trollstaven/nioplugget/backend/internal/chat"
 	"github.com/trollstaven/nioplugget/backend/internal/child"
+	"github.com/trollstaven/nioplugget/backend/internal/content"
 	"github.com/trollstaven/nioplugget/backend/internal/database"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
@@ -66,6 +68,14 @@ func main() {
 	childStore := child.NewQueriesStore(q, pool)
 	childRateLimiter := child.NewPINRateLimiter(5, 15*time.Minute)
 	childHandler := child.NewChildHandler(childStore, childRateLimiter)
+
+	// Initialize content handler
+	contentStore := content.NewQueriesStore(q)
+	contentHandler := content.NewContentHandler(contentStore)
+
+	// Initialize chat handler
+	chatStore := chat.NewQueriesStore(q)
+	chatHandler := chat.NewChatHandler(chatStore, encSvc)
 
 	// Build router
 	r := chi.NewRouter()
@@ -131,6 +141,33 @@ func main() {
 		r.Post("/{token}/activate", childHandler.Activate)
 	})
 
+	// Content routes (child only)
+	r.Route("/api/subjects", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ChildOnly)
+		r.Get("/", contentHandler.ListSubjects)
+		r.Get("/{subjectSlug}/topics", contentHandler.ListTopics)
+	})
+	r.Route("/api/topics", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ChildOnly)
+		r.Get("/{subjectSlug}/{topicSlug}/exercises", contentHandler.ListExercises)
+	})
+
+	// Session/chat routes (child only)
+	r.Route("/api/sessions", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ChildOnly)
+		r.Post("/", chatHandler.CreateSession)
+		r.Get("/{id}", chatHandler.GetSession)
+		r.Post("/{id}/messages", chatHandler.SendMessage)
+		r.Get("/{id}/messages", chatHandler.ListMessages)
+		r.Post("/{id}/end", chatHandler.EndSession)
+	})
+
 	addr := ":" + port
 	log.Info().Str("addr", addr).Msg("starting server")
 
@@ -138,7 +175,7 @@ func main() {
 		Addr:         addr,
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		WriteTimeout: 5 * time.Minute, // Extended for SSE streaming
 		IdleTimeout:  60 * time.Second,
 	}
 
