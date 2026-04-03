@@ -105,3 +105,13 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Spaced Repetition | 3/3 | Complete   | 2026-04-03 |
 | 4. Progress Views | 3/3 | Complete   | 2026-04-03 |
 | 5. Polish + UI | 0/3 | Not started | - |
+
+### Phase 6: NP-Based Exercise Prompts
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 6 to break down)

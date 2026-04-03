@@ -91,6 +91,10 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Roadmap Evolution
+
+- Phase 6 added: NP-Based Exercise Prompts — rewrite all system prompts based on real nationella prov patterns
+
 ### Blockers/Concerns
 
 - Phase 2: Per-exercise system prompt design is the highest-value, hardest-to-get-right work. Needs deliberate prompt review before seeding ~50-60 exercises.
