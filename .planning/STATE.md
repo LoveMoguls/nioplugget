@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-03T09:03:01.183Z"
+last_updated: "2026-04-03T09:17:42.369Z"
 progress:
-  total_phases: 2
+  total_phases: 5
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 13
+  completed_plans: 12
 ---
 
 # Project State
@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 3 of 5 (Spaced Repetition) — IN PROGRESS
-Plan: 1 of 4 in current phase — COMPLETE
-Status: Phase 3 Plan 01 complete — SM-2 algorithm implemented
-Last activity: 2026-04-03 — Completed 03-01 (SM-2 spaced repetition algorithm)
+Plan: 2 of 4 in current phase — COMPLETE
+Status: Phase 3 Plan 02 complete — review_schedule DB migration and sqlc queries
+Last activity: 2026-04-03 — Completed 03-02 (review_schedule DB migration and sqlc queries)
 
 Progress: [██████░░░░] 60% (Phase 3 in progress)
 
@@ -50,6 +50,7 @@ Progress: [██████░░░░] 60% (Phase 3 in progress)
 | Phase 01-foundation P03 | 12min | 3 tasks | 8 files |
 | Phase 01-foundation P04 | 5min | 2 tasks | 9 files |
 | Phase 01-foundation P05 | 10 | 4 tasks | 20 files |
+| Phase 03-spaced-repetition P02 | 2 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: onMount auth guard in dashboard page instead of SvelteKit load function — SSR load runs before cookie-based store is hydrated
 - [Phase 03-spaced-repetition 03-01]: Pure function with now time.Time parameter for SM-2 Calculate — enables deterministic testing without time.Now() side effects
 - [Phase 03-spaced-repetition 03-01]: math.Max for EF floor enforcement (1.3) — simple, unambiguous, applied to both success and failure cases
+- [Phase 03-spaced-repetition]: ListDueReviews joins exercises/topics/subjects for enriched due-item rows - avoids N+1 in due-item listing
+- [Phase 03-spaced-repetition]: UpsertReviewSchedule uses ON CONFLICT DO UPDATE - idempotent after every session, no separate insert/update paths
 
 ### Pending Todos
 
@@ -94,5 +97,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 03-01-PLAN.md — SM-2 spaced repetition algorithm (pure function, 13 tests)
+Stopped at: Completed 03-02-PLAN.md — review_schedule DB migration and sqlc queries
 Resume file: None
