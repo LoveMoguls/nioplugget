@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/trollstaven/nioplugget/backend/internal/apikey"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/database"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
@@ -27,7 +28,7 @@ func main() {
 	// Load required env vars
 	databaseURL := mustEnv("DATABASE_URL")
 	jwtSecret := mustEnv("JWT_SECRET")
-	_ = mustEnv("ENCRYPTION_KEY")
+	encryptionKey := mustEnv("ENCRYPTION_KEY")
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -51,6 +52,14 @@ func main() {
 
 	// Initialize auth handler
 	authHandler := auth.NewAuthHandler(q, tokenAuth)
+
+	// Initialize API key handler
+	encSvc, err := apikey.NewEncryptionService(encryptionKey)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to initialize encryption service")
+	}
+	apiKeyStore := apikey.NewQueriesStore(q)
+	apiKeyHandler := apikey.NewAPIKeyHandler(apiKeyStore, encSvc, "")
 
 	// Build router
 	r := chi.NewRouter()
@@ -80,10 +89,15 @@ func main() {
 		})
 	})
 
+	// API key routes (protected: parent JWT required)
 	r.Route("/api/apikey", func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotImplemented)
-		})
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ParentOnly)
+		r.Post("/", apiKeyHandler.Store)
+		r.Get("/", apiKeyHandler.Get)
+		r.Put("/", apiKeyHandler.Update)
+		r.Delete("/", apiKeyHandler.Delete)
 	})
 	r.Route("/api/children", func(r chi.Router) {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
