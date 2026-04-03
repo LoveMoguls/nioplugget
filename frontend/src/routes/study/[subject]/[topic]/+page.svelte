@@ -66,7 +66,7 @@
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<a
 		href="/study/{subjectSlug}"
-		class="text-muted-foreground mb-4 inline-block text-sm hover:underline"
+		class="text-muted-foreground mb-4 inline-flex min-h-[44px] items-center text-sm hover:underline"
 	>
 		&larr; Tillbaka till {subjectName || 'områden'}
 	</a>
@@ -93,7 +93,7 @@
 						<Button
 							onclick={() => startExercise(exercise.id)}
 							disabled={starting !== ''}
-							class="shrink-0"
+							class="min-h-[44px] shrink-0"
 						>
 							{starting === exercise.id ? 'Startar...' : 'Starta övning'}
 						</Button>

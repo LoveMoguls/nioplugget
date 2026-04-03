@@ -277,15 +277,16 @@
 				</form>
 			{:else}
 				<!-- Has key — show masked + actions -->
-				<div class="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-3">
-					<div>
+				<div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+					<div class="min-w-0">
 						<p class="text-xs text-muted-foreground">Sparad nyckel</p>
-						<p class="font-mono text-sm text-foreground">{apiKeyData.masked}</p>
+						<p class="truncate font-mono text-sm text-foreground">{apiKeyData.masked}</p>
 					</div>
 					<div class="flex gap-2">
 						<Button
 							variant="outline"
 							size="sm"
+							class="min-h-[44px]"
 							onclick={() => {
 								showUpdateForm = true;
 								apiKeyError = '';
@@ -297,9 +298,9 @@
 						<Button
 							variant="outline"
 							size="sm"
+							class="min-h-[44px] text-destructive hover:text-destructive"
 							onclick={handleDeleteApiKey}
 							disabled={apiKeyLoading}
-							class="text-destructive hover:text-destructive"
 						>
 							Ta bort
 						</Button>

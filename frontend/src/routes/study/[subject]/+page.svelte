@@ -41,7 +41,7 @@
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
-	<a href="/study" class="text-muted-foreground mb-4 inline-block text-sm hover:underline">
+	<a href="/study" class="text-muted-foreground mb-4 inline-flex min-h-[44px] items-center text-sm hover:underline">
 		&larr; Tillbaka till ämnen
 	</a>
 

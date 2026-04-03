@@ -9,10 +9,10 @@
 
 <div class="flex {role === 'user' ? 'justify-end' : 'justify-start'} mb-3">
 	<div
-		class="max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
+		class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
 		{role === 'user'
-			? 'rounded-br-md bg-indigo-600 text-white'
-			: 'rounded-bl-md bg-slate-100 text-slate-900'}"
+			? 'rounded-br-md bg-primary text-primary-foreground'
+			: 'rounded-bl-md bg-muted text-foreground'}"
 	>
 		{#each content.split('\n') as line, i}
 			{#if i > 0}<br />{/if}

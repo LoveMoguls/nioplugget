@@ -30,15 +30,15 @@
 		{disabled}
 		placeholder="Skriv ditt svar..."
 		rows={1}
-		class="flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm
-			focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
+		class="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm
+			focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring
 			disabled:cursor-not-allowed disabled:opacity-50"
 	></textarea>
 	<button
 		type="submit"
 		disabled={disabled || !message.trim()}
-		class="shrink-0 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-medium text-white
-			hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+		class="min-h-[44px] shrink-0 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground
+			hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
 	>
 		Skicka
 	</button>

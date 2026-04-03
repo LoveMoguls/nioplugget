@@ -51,7 +51,7 @@
 		<h1 class="text-2xl font-bold">Välj ämne</h1>
 		<a
 			href="/progress"
-			class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+			class="flex min-h-[44px] items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
 		>
 			Min progress
 		</a>
@@ -71,12 +71,12 @@
 							href="/study/{review.subjectSlug}/{review.topicSlug}?exercise={review.exerciseId}"
 							class="block"
 						>
-							<Card class="border-amber-200 bg-amber-50 transition-shadow hover:shadow-md">
+							<Card class="border-accent bg-accent/30 transition-shadow hover:shadow-md">
 								<CardHeader class="pb-3">
 									<CardTitle class="text-base">{review.exerciseTitle}</CardTitle>
 									<CardDescription>
 										{review.subjectName} · {review.topicName}
-										<span class="mt-1 block text-amber-700">
+										<span class="mt-1 block font-medium text-primary">
 											{review.daysOverdue === 0 ? 'Dags idag' : `${review.daysOverdue} dagar sedan`}
 										</span>
 									</CardDescription>
