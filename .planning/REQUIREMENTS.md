@@ -18,10 +18,10 @@
 
 ### API Key Management
 
-- [ ] **KEY-01**: Förälder kan lägga in sin Claude API-nyckel
-- [ ] **KEY-02**: API-nyckeln krypteras med AES-256-GCM innan den sparas i databasen
-- [ ] **KEY-03**: Förälder kan uppdatera eller ta bort sin API-nyckel
-- [ ] **KEY-04**: System visar tydligt felmeddelande om API-nyckeln är ogiltig eller utgången
+- [x] **KEY-01**: Förälder kan lägga in sin Claude API-nyckel
+- [x] **KEY-02**: API-nyckeln krypteras med AES-256-GCM innan den sparas i databasen
+- [x] **KEY-03**: Förälder kan uppdatera eller ta bort sin API-nyckel
+- [x] **KEY-04**: System visar tydligt felmeddelande om API-nyckeln är ogiltig eller utgången
 
 ### Content
 
@@ -113,10 +113,10 @@
 | AUTH-06 | Phase 1 | Pending |
 | AUTH-07 | Phase 1 | Pending |
 | AUTH-08 | Phase 1 | Pending |
-| KEY-01 | Phase 1 | Pending |
-| KEY-02 | Phase 1 | Pending |
-| KEY-03 | Phase 1 | Pending |
-| KEY-04 | Phase 1 | Pending |
+| KEY-01 | Phase 1 | Complete |
+| KEY-02 | Phase 1 | Complete |
+| KEY-03 | Phase 1 | Complete |
+| KEY-04 | Phase 1 | Complete |
 | SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Pending |
 | SEC-03 | Phase 1 | Pending |
