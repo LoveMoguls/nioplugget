@@ -30,7 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A parent can generate an invite link for a child and the child can activate the account with a self-chosen PIN
   4. A child can log in using their name + PIN; repeated wrong PINs are rate-limited
   5. The Go backend never logs API keys or Authorization headers; invite links are single-use and expire after 72 hours
-**Plans**: TBD
+**Plans**: 5 plans
+  - [ ] 01-01-PLAN.md — Project scaffolding, DB schema, sqlc, redacting logger
+  - [ ] 01-02-PLAN.md — Parent auth (Argon2id, JWT, register/login/logout)
+  - [ ] 01-03-PLAN.md — AES-256-GCM encryption + API key CRUD + validation
+  - [ ] 01-04-PLAN.md — Child profiles, invite links, activation, PIN login, rate limiting
+  - [ ] 01-05-PLAN.md — SvelteKit frontend: all parent and child user flows
 
 ### Phase 2: Content + AI Chat
 **Goal**: A student can select a subject, area, and exercise, then complete a full Socratic dialogue session where the AI guides with questions and never gives direct answers
