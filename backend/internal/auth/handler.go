@@ -2,10 +2,12 @@ package auth
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/jwtauth/v5"
@@ -20,6 +22,7 @@ import (
 type ParentQuerier interface {
 	CreateParent(ctx context.Context, arg queries.CreateParentParams) (queries.Parent, error)
 	GetParentByEmail(ctx context.Context, email string) (queries.Parent, error)
+	GetParentByID(ctx context.Context, id pgtype.UUID) (queries.Parent, error)
 }
 
 // AuthHandler holds the dependencies for auth HTTP handlers.
@@ -188,6 +191,45 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	clearAuthCookie(w)
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Utloggad"})
+}
+
+// meResponse is the JSON response for GET /api/auth/me.
+type meResponse struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Role  string `json:"role"`
+}
+
+// Me handles GET /api/auth/me — returns current user info from JWT claims.
+// Used by the frontend to restore session state on page load.
+func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
+	userID := GetUserIDFromContext(r.Context())
+	role := GetRoleFromContext(r.Context())
+	if userID == "" {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Inte inloggad"})
+		return
+	}
+
+	// For parent role: fetch email from database using the sub claim (UUID string)
+	email := ""
+	if role == "parent" {
+		// Parse UUID from string
+		b, err := hex.DecodeString(strings.ReplaceAll(userID, "-", ""))
+		if err == nil && len(b) == 16 {
+			var uuid pgtype.UUID
+			copy(uuid.Bytes[:], b)
+			uuid.Valid = true
+			if parent, err := h.queries.GetParentByID(r.Context(), uuid); err == nil {
+				email = parent.Email
+			}
+		}
+	}
+
+	writeJSON(w, http.StatusOK, meResponse{
+		ID:    userID,
+		Email: email,
+		Role:  role,
+	})
 }
 
 // uuidToString converts pgtype.UUID to string.

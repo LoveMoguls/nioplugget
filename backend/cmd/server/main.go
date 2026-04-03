@@ -86,12 +86,17 @@ func main() {
 		r.Post("/register", authHandler.Register)
 		r.Post("/login", authHandler.Login)
 
-		// Protected: logout requires valid parent JWT
+		// Protected: requires valid JWT (any role)
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(jwtauth.Authenticator(tokenAuth))
-			r.Use(auth.ParentOnly)
-			r.Post("/logout", authHandler.Logout)
+			r.Get("/me", authHandler.Me)
+
+			// Parent-only
+			r.Group(func(r chi.Router) {
+				r.Use(auth.ParentOnly)
+				r.Post("/logout", authHandler.Logout)
+			})
 		})
 	})
 

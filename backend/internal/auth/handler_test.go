@@ -20,8 +20,9 @@ import (
 
 // mockQueries implements auth.ParentQuerier for testing.
 type mockQueries struct {
-	createParentFn    func(ctx context.Context, arg queries.CreateParentParams) (queries.Parent, error)
+	createParentFn     func(ctx context.Context, arg queries.CreateParentParams) (queries.Parent, error)
 	getParentByEmailFn func(ctx context.Context, email string) (queries.Parent, error)
+	getParentByIDFn    func(ctx context.Context, id pgtype.UUID) (queries.Parent, error)
 }
 
 func (m *mockQueries) CreateParent(ctx context.Context, arg queries.CreateParentParams) (queries.Parent, error) {
@@ -34,6 +35,13 @@ func (m *mockQueries) CreateParent(ctx context.Context, arg queries.CreateParent
 func (m *mockQueries) GetParentByEmail(ctx context.Context, email string) (queries.Parent, error) {
 	if m.getParentByEmailFn != nil {
 		return m.getParentByEmailFn(ctx, email)
+	}
+	return queries.Parent{}, nil
+}
+
+func (m *mockQueries) GetParentByID(ctx context.Context, id pgtype.UUID) (queries.Parent, error) {
+	if m.getParentByIDFn != nil {
+		return m.getParentByIDFn(ctx, id)
 	}
 	return queries.Parent{}, nil
 }
