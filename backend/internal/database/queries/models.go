@@ -49,6 +49,18 @@ type PinAttempt struct {
 	LastAttemptAt pgtype.Timestamptz `json:"last_attempt_at"`
 }
 
+type ReviewSchedule struct {
+	ID              pgtype.UUID        `json:"id"`
+	StudentID       pgtype.UUID        `json:"student_id"`
+	ExerciseID      pgtype.UUID        `json:"exercise_id"`
+	EaseFactor      float32            `json:"ease_factor"`
+	IntervalDays    int32              `json:"interval_days"`
+	RepetitionCount int32              `json:"repetition_count"`
+	NextReview      pgtype.Timestamptz `json:"next_review"`
+	LastReviewedAt  pgtype.Timestamptz `json:"last_reviewed_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
 type Session struct {
 	ID         pgtype.UUID        `json:"id"`
 	StudentID  pgtype.UUID        `json:"student_id"`
