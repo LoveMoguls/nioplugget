@@ -107,11 +107,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 5. Polish + UI | 0/3 | Not started | - |
 
 ### Phase 6: NP-Based Exercise Prompts
-
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal**: All 37 exercise system prompts are rewritten to match real nationella prov patterns — NP verb hierarchy (Beskriv=E, Förklara=C, Resonera=A), authentic question formulations, subject-specific scoring awareness, and common student mistakes
+**Requirements**: CONT-05
 **Depends on:** Phase 5
-**Plans:** 0 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 6 to break down)
+- [ ] 06-01-PLAN.md — Rewrite all 37 exercise system prompts with NP-calibrated content (bio + samhälle + matte)
