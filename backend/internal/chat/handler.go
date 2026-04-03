@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -11,6 +12,7 @@ import (
 	"github.com/trollstaven/nioplugget/backend/internal/apikey"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
+	"github.com/trollstaven/nioplugget/backend/internal/srs"
 )
 
 // ChatHandler provides HTTP handlers for chat operations.
@@ -342,6 +344,45 @@ func (h *ChatHandler) EndSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"Kunde inte avsluta sessionen"}`, http.StatusInternalServerError)
 		return
 	}
+
+	// Update spaced repetition schedule via SM-2 (non-blocking — failure does not affect response)
+	srsCtx := r.Context()
+	srsStudentUUID := parseUUID(studentID)
+	srsExerciseID := session.ExerciseID
+	srsScore := scoreResult.Score
+	go func() {
+		// Get existing schedule (if any) for current EF and interval
+		sm2Input := srs.SM2Input{
+			Score:           srsScore,
+			EaseFactor:      2.5, // SM-2 default
+			IntervalDays:    1,
+			RepetitionCount: 0,
+		}
+
+		existing, err := h.store.GetReviewSchedule(srsCtx, queries.GetReviewScheduleParams{
+			StudentID:  srsStudentUUID,
+			ExerciseID: srsExerciseID,
+		})
+		if err == nil {
+			sm2Input.EaseFactor = float64(existing.EaseFactor)
+			sm2Input.IntervalDays = int(existing.IntervalDays)
+			sm2Input.RepetitionCount = int(existing.RepetitionCount)
+		}
+
+		output := srs.Calculate(sm2Input, time.Now())
+
+		_, err = h.store.UpsertReviewSchedule(srsCtx, queries.UpsertReviewScheduleParams{
+			StudentID:       srsStudentUUID,
+			ExerciseID:      srsExerciseID,
+			EaseFactor:      float32(output.EaseFactor),
+			IntervalDays:    int32(output.IntervalDays),
+			RepetitionCount: int32(output.RepetitionCount),
+			NextReview:      pgtype.Timestamptz{Time: output.NextReview, Valid: true},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("failed to update review schedule")
+		}
+	}()
 
 	writeJSON(w, http.StatusOK, endSessionResponse{
 		Score:    scoreResult.Score,

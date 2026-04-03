@@ -17,6 +17,8 @@ type ChatStore interface {
 	GetExerciseByID(ctx context.Context, id pgtype.UUID) (queries.GetExerciseByIDRow, error)
 	GetStudentByID(ctx context.Context, id pgtype.UUID) (queries.Student, error)
 	GetAPIKeyByParentID(ctx context.Context, parentID pgtype.UUID) (queries.ApiKey, error)
+	UpsertReviewSchedule(ctx context.Context, arg queries.UpsertReviewScheduleParams) (queries.ReviewSchedule, error)
+	GetReviewSchedule(ctx context.Context, arg queries.GetReviewScheduleParams) (queries.ReviewSchedule, error)
 }
 
 // QueriesStore implements ChatStore using sqlc-generated queries.
@@ -59,4 +61,12 @@ func (s *QueriesStore) GetStudentByID(ctx context.Context, id pgtype.UUID) (quer
 
 func (s *QueriesStore) GetAPIKeyByParentID(ctx context.Context, parentID pgtype.UUID) (queries.ApiKey, error) {
 	return s.q.GetAPIKeyByParentID(ctx, parentID)
+}
+
+func (s *QueriesStore) UpsertReviewSchedule(ctx context.Context, arg queries.UpsertReviewScheduleParams) (queries.ReviewSchedule, error) {
+	return s.q.UpsertReviewSchedule(ctx, arg)
+}
+
+func (s *QueriesStore) GetReviewSchedule(ctx context.Context, arg queries.GetReviewScheduleParams) (queries.ReviewSchedule, error) {
+	return s.q.GetReviewSchedule(ctx, arg)
 }
