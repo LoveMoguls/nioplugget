@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-03T08:04:28.156Z"
+last_updated: "2026-04-03T08:12:47.369Z"
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 ## Current Position
 
 Phase: 1 of 5 (Foundation)
-Plan: 4 of 5 in current phase
+Plan: 5 of 5 in current phase
 Status: In progress
-Last activity: 2026-04-03 — Completed 01-03 (AES-256-GCM encryption, API key validation, CRUD handlers)
+Last activity: 2026-04-03 — Completed 01-04 (child invite/activation, PIN login with Argon2id, rate limiting)
 
 Progress: [███░░░░░░░] 20%
 
@@ -48,6 +48,7 @@ Progress: [███░░░░░░░] 20%
 
 *Updated after each plan completion*
 | Phase 01-foundation P03 | 12min | 3 tasks | 8 files |
+| Phase 01-foundation P04 | 5min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: APIKeyStore interface decouples handler from sqlc — enables unit testing without DB
 - [Phase 01-foundation]: Raw key never logged or returned — only masked format (sk-ant...****) in responses
 - [Phase 01-foundation]: QueriesStore adapter in store.go keeps handler independent of sqlc implementation details
+- [Phase 01-foundation]: ChildQuerier interface over concrete *queries.Queries — enables unit tests without live database, consistent with ParentQuerier pattern
+- [Phase 01-foundation]: UpdateStudentInvite via raw SQL in QueriesStore — sqlc lacks this query; passing queries.DBTX avoids touching generated files
+- [Phase 01-foundation]: In-memory PINRateLimiter with sync.Mutex — DB-backed rate limiting not needed for MVP, simpler and fast for single-process deployment
 
 ### Pending Todos
 
@@ -84,5 +88,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 01-02-PLAN.md — Argon2id hashing, JWT session management, register/login/logout handlers
+Stopped at: Completed 01-04-PLAN.md — child invite/login with PIN rate limiting
 Resume file: None

@@ -10,11 +10,11 @@
 - [x] **AUTH-01**: Förälder kan registrera sig med e-post och lösenord
 - [x] **AUTH-02**: Förälder kan logga in och sessionen bevaras över sidladdning
 - [x] **AUTH-03**: Förälder kan logga ut
-- [ ] **AUTH-04**: Förälder kan skapa barnprofil med namn
-- [ ] **AUTH-05**: System genererar en engångs-invite-länk (tidsbegränsad) för barnprofilen
-- [ ] **AUTH-06**: Barn kan aktivera konto via invite-länk och välja PIN-kod
-- [ ] **AUTH-07**: Barn kan logga in med sitt namn + PIN
-- [ ] **AUTH-08**: PIN-inloggning har rate limiting mot brute force
+- [x] **AUTH-04**: Förälder kan skapa barnprofil med namn
+- [x] **AUTH-05**: System genererar en engångs-invite-länk (tidsbegränsad) för barnprofilen
+- [x] **AUTH-06**: Barn kan aktivera konto via invite-länk och välja PIN-kod
+- [x] **AUTH-07**: Barn kan logga in med sitt namn + PIN
+- [x] **AUTH-08**: PIN-inloggning har rate limiting mot brute force
 
 ### API Key Management
 
@@ -65,7 +65,7 @@
 ### Security
 
 - [x] **SEC-01**: Go-backend loggar aldrig API-nycklar eller Authorization-headers
-- [ ] **SEC-02**: Invite-länkar är engångs och tidsbegränsade (atomisk invalidering)
+- [x] **SEC-02**: Invite-länkar är engångs och tidsbegränsade (atomisk invalidering)
 - [x] **SEC-03**: GDPR-samtycke samlas in explicit vid föräldraregistrering
 
 ## v2 Requirements
@@ -108,17 +108,17 @@
 | AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 1 | Complete |
 | AUTH-03 | Phase 1 | Complete |
-| AUTH-04 | Phase 1 | Pending |
-| AUTH-05 | Phase 1 | Pending |
-| AUTH-06 | Phase 1 | Pending |
-| AUTH-07 | Phase 1 | Pending |
-| AUTH-08 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Complete |
+| AUTH-05 | Phase 1 | Complete |
+| AUTH-06 | Phase 1 | Complete |
+| AUTH-07 | Phase 1 | Complete |
+| AUTH-08 | Phase 1 | Complete |
 | KEY-01 | Phase 1 | Complete |
 | KEY-02 | Phase 1 | Complete |
 | KEY-03 | Phase 1 | Complete |
 | KEY-04 | Phase 1 | Complete |
 | SEC-01 | Phase 1 | Complete |
-| SEC-02 | Phase 1 | Pending |
+| SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
 | CONT-01 | Phase 2 | Pending |
 | CONT-02 | Phase 2 | Pending |
