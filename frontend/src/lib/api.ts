@@ -91,6 +91,11 @@ export const sessions = {
 	messages: (sessionId: string) => apiFetch(`/api/sessions/${sessionId}/messages`),
 };
 
+// Reviews (spaced repetition)
+export const reviews = {
+	due: () => apiFetch('/api/reviews/due'),
+};
+
 // Child auth
 export const childAuth = {
 	names: (parentEmail: string) =>

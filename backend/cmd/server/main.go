@@ -21,6 +21,7 @@ import (
 	"github.com/trollstaven/nioplugget/backend/internal/database"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
+	"github.com/trollstaven/nioplugget/backend/internal/srs"
 )
 
 func main() {
@@ -76,6 +77,10 @@ func main() {
 	// Initialize chat handler
 	chatStore := chat.NewQueriesStore(q)
 	chatHandler := chat.NewChatHandler(chatStore, encSvc)
+
+	// Initialize SRS handler
+	srsStore := srs.NewQueriesStore(q)
+	srsHandler := srs.NewSRSHandler(srsStore)
 
 	// Build router
 	r := chi.NewRouter()
@@ -154,6 +159,14 @@ func main() {
 		r.Use(jwtauth.Authenticator(tokenAuth))
 		r.Use(auth.ChildOnly)
 		r.Get("/{subjectSlug}/{topicSlug}/exercises", contentHandler.ListExercises)
+	})
+
+	// Reviews (spaced repetition) routes (child only)
+	r.Route("/api/reviews", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ChildOnly)
+		r.Get("/due", srsHandler.ListDueReviews)
 	})
 
 	// Session/chat routes (child only)
