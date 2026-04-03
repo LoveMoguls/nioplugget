@@ -96,6 +96,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/5 | Complete   | 2026-04-03 |
 | 2. Content + AI Chat | 0/5 | Not started | - |
-| 3. Spaced Repetition | 0/? | Not started | - |
+| 3. Spaced Repetition | 1/3 | In Progress|  |
 | 4. Progress Views | 0/? | Not started | - |
 | 5. Polish + UI | 0/? | Not started | - |
