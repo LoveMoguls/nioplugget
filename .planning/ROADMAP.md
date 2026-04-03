@@ -76,9 +76,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. A student can identify their weakest areas based on session score history
   3. A parent can view their child's progress and subject overview after logging in
 **Plans**: 3 plans
-  - [ ] 04-01-PLAN.md — Progress API: SQL aggregation queries, handler with parent auth, API client
-  - [ ] 04-02-PLAN.md — Student progress page: per-subject cards, topic bar charts, strengths/weaknesses
-  - [ ] 04-03-PLAN.md — Parent child progress page: summary stats, session history, dashboard links
+  - [x] 04-01-PLAN.md — Progress API: SQL aggregation queries, handler with parent auth, API client
+  - [x] 04-02-PLAN.md — Student progress page: per-subject cards, topic bar charts, strengths/weaknesses
+  - [x] 04-03-PLAN.md — Parent child progress page: summary stats, session history, dashboard links
 
 ### Phase 5: Polish + UI
 **Goal**: The assembled product is mobile-ready, visually calm, and passes a full end-to-end security and UX review

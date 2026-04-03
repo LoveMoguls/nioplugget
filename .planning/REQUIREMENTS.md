@@ -51,9 +51,9 @@
 
 ### Progress
 
-- [ ] **PROG-01**: Elev kan se en översikt av sin progress per ämne
-- [ ] **PROG-02**: Elev kan se styrkor och svagheter baserat på sessionshistorik
-- [ ] **PROG-03**: Förälder kan se sitt barns progress och ämnesöversikt
+- [x] **PROG-01**: Elev kan se en översikt av sin progress per ämne
+- [x] **PROG-02**: Elev kan se styrkor och svagheter baserat på sessionshistorik
+- [x] **PROG-03**: Förälder kan se sitt barns progress och ämnesöversikt
 
 ### Frontend
 
@@ -138,9 +138,9 @@
 | SRS-02 | Phase 3 | Complete |
 | SRS-03 | Phase 3 | Complete |
 | SRS-04 | Phase 3 | Complete |
-| PROG-01 | Phase 4 | Pending |
-| PROG-02 | Phase 4 | Pending |
-| PROG-03 | Phase 4 | Pending |
+| PROG-01 | Phase 4 | Complete |
+| PROG-02 | Phase 4 | Complete |
+| PROG-03 | Phase 4 | Complete |
 | UI-01 | Phase 5 | Pending |
 | UI-02 | Phase 5 | Pending |
 | UI-03 | Phase 5 | Pending |
