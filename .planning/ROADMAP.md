@@ -62,7 +62,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. A session can be completed with a score (1-5), either via self-rating or AI assessment, and the score is persisted
   2. The SM-2 algorithm calculates the next review date from the score; ease factor never drops below 1.3
   3. The home screen shows "Dags att repetera"-cards for all exercises whose review date has passed
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 03-01-PLAN.md — SM-2 algorithm (TDD, pure function with tests)
+  - [ ] 03-02-PLAN.md — review_schedule DB migration and sqlc queries
+  - [ ] 03-03-PLAN.md — SRS backend handler, EndSession hook, and frontend review cards
 
 ### Phase 4: Progress Views
 **Goal**: Students can see their own strengths and weaknesses per subject, and parents can see an overview of their child's activity — both derived purely from existing session data
