@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-03T08:12:47.369Z"
+last_updated: "2026-04-03T08:26:25.600Z"
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -22,12 +22,12 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Phase: 1 of 5 (Foundation)
-Plan: 5 of 5 in current phase
-Status: In progress
-Last activity: 2026-04-03 — Completed 01-04 (child invite/activation, PIN login with Argon2id, rate limiting)
+Phase: 1 of 5 (Foundation) — COMPLETE
+Plan: 5 of 5 in current phase — COMPLETE
+Status: Phase 1 complete, ready for Phase 2
+Last activity: 2026-04-03 — Completed 01-05 (SvelteKit frontend, all Phase 1 user flows)
 
-Progress: [███░░░░░░░] 20%
+Progress: [██████████] 100% (Phase 1)
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [███░░░░░░░] 20%
 *Updated after each plan completion*
 | Phase 01-foundation P03 | 12min | 3 tasks | 8 files |
 | Phase 01-foundation P04 | 5min | 2 tasks | 9 files |
+| Phase 01-foundation P05 | 10 | 4 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: ChildQuerier interface over concrete *queries.Queries — enables unit tests without live database, consistent with ParentQuerier pattern
 - [Phase 01-foundation]: UpdateStudentInvite via raw SQL in QueriesStore — sqlc lacks this query; passing queries.DBTX avoids touching generated files
 - [Phase 01-foundation]: In-memory PINRateLimiter with sync.Mutex — DB-backed rate limiting not needed for MVP, simpler and fast for single-process deployment
+- [Phase 01-foundation]: Flat SvelteKit routes instead of route groups — (parent)/login and (child)/login both resolve to /login causing fatal conflict
+- [Phase 01-foundation]: GET /api/auth/me endpoint added to backend for session restoration from httpOnly cookie on frontend page load
+- [Phase 01-foundation]: onMount auth guard in dashboard page instead of SvelteKit load function — SSR load runs before cookie-based store is hydrated
 
 ### Pending Todos
 
@@ -88,5 +92,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-03
-Stopped at: Completed 01-04-PLAN.md — child invite/login with PIN rate limiting
+Stopped at: Completed 01-05-PLAN.md — SvelteKit frontend with all Phase 1 user flows
 Resume file: None

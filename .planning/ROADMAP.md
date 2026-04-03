@@ -12,7 +12,7 @@ Nioplugget delivers a Socratic AI study app for Swedish nationella prov (åk 9).
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Parent auth, child invite flow, API key encryption, and security baseline
+- [x] **Phase 1: Foundation** - Parent auth, child invite flow, API key encryption, and security baseline (completed 2026-04-03)
 - [ ] **Phase 2: Content + AI Chat** - Exercise seed data (~50-60 exercises) and the core Socratic dialogue product
 - [ ] **Phase 3: Spaced Repetition** - Session scoring, SM-2 scheduling, and the due-today flywheel
 - [ ] **Phase 4: Progress Views** - Read-only strength/weakness and parent overview derived from session history
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 4/5 | In Progress|  |
+| 1. Foundation | 5/5 | Complete   | 2026-04-03 |
 | 2. Content + AI Chat | 0/? | Not started | - |
 | 3. Spaced Repetition | 0/? | Not started | - |
 | 4. Progress Views | 0/? | Not started | - |
