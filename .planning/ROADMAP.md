@@ -47,7 +47,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. AI responses stream in real time via SSE and the AI consistently asks guiding questions without revealing direct answers
   4. A student can end a session manually; all messages are persisted in the database
   5. The AI refuses to answer off-topic questions and redirects the student back to the exercise subject
-**Plans**: TBD
+**Plans**: 5 plans
+  - [ ] 02-01-PLAN.md — DB schema, seed exercises, sqlc queries
+  - [ ] 02-02-PLAN.md — Content browsing API + 3-step navigation frontend
+  - [ ] 02-03-PLAN.md — Chat backend with SSE streaming and message persistence
+  - [ ] 02-04-PLAN.md — Chat frontend UI with bubble messages and streaming
+  - [ ] 02-05-PLAN.md — Session end with AI scoring and summary
 
 ### Phase 3: Spaced Repetition
 **Goal**: Every completed session produces a score that feeds SM-2 scheduling, so returning students see exactly which exercises are due for review
@@ -87,7 +92,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/5 | Complete   | 2026-04-03 |
-| 2. Content + AI Chat | 0/? | Not started | - |
+| 2. Content + AI Chat | 0/5 | Not started | - |
 | 3. Spaced Repetition | 0/? | Not started | - |
 | 4. Progress Views | 0/? | Not started | - |
 | 5. Polish + UI | 0/? | Not started | - |
