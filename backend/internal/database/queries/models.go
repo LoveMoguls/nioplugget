@@ -16,6 +16,24 @@ type ApiKey struct {
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
+type Exercise struct {
+	ID              pgtype.UUID        `json:"id"`
+	TopicID         pgtype.UUID        `json:"topic_id"`
+	Title           string             `json:"title"`
+	Description     string             `json:"description"`
+	DifficultyOrder int32              `json:"difficulty_order"`
+	SystemPrompt    string             `json:"system_prompt"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type Message struct {
+	ID        pgtype.UUID        `json:"id"`
+	SessionID pgtype.UUID        `json:"session_id"`
+	Role      string             `json:"role"`
+	Content   string             `json:"content"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type Parent struct {
 	ID            pgtype.UUID        `json:"id"`
 	Email         string             `json:"email"`
@@ -31,6 +49,16 @@ type PinAttempt struct {
 	LastAttemptAt pgtype.Timestamptz `json:"last_attempt_at"`
 }
 
+type Session struct {
+	ID         pgtype.UUID        `json:"id"`
+	StudentID  pgtype.UUID        `json:"student_id"`
+	ExerciseID pgtype.UUID        `json:"exercise_id"`
+	Score      pgtype.Int4        `json:"score"`
+	Summary    pgtype.Text        `json:"summary"`
+	StartedAt  pgtype.Timestamptz `json:"started_at"`
+	EndedAt    pgtype.Timestamptz `json:"ended_at"`
+}
+
 type Student struct {
 	ID              pgtype.UUID        `json:"id"`
 	ParentID        pgtype.UUID        `json:"parent_id"`
@@ -40,4 +68,21 @@ type Student struct {
 	InviteExpiresAt pgtype.Timestamptz `json:"invite_expires_at"`
 	ActivatedAt     pgtype.Timestamptz `json:"activated_at"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type Subject struct {
+	ID           pgtype.UUID        `json:"id"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type Topic struct {
+	ID           pgtype.UUID        `json:"id"`
+	SubjectID    pgtype.UUID        `json:"subject_id"`
+	Name         string             `json:"name"`
+	Slug         string             `json:"slug"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 }
