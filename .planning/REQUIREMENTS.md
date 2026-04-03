@@ -44,9 +44,9 @@
 
 ### Spaced Repetition
 
-- [ ] **SRS-01**: Varje avslutad session får en score (1-5) via AI-bedömning
+- [x] **SRS-01**: Varje avslutad session får en score (1-5) via AI-bedömning
 - [x] **SRS-02**: SM-2-algoritmen beräknar nästa repetitionsdatum baserat på score
-- [ ] **SRS-03**: Startsidan visar "Dags att repetera"-kort för ämnesområden som passerat review-datum
+- [x] **SRS-03**: Startsidan visar "Dags att repetera"-kort för ämnesområden som passerat review-datum
 - [x] **SRS-04**: Ease factor har ett minimumgolv (1.3) för att undvika "ease hell"
 
 ### Progress
@@ -134,9 +134,9 @@
 | CHAT-07 | Phase 2 | Pending |
 | CHAT-08 | Phase 2 | Pending |
 | UI-04 | Phase 2 | Pending |
-| SRS-01 | Phase 3 | Pending |
+| SRS-01 | Phase 3 | Complete |
 | SRS-02 | Phase 3 | Complete |
-| SRS-03 | Phase 3 | Pending |
+| SRS-03 | Phase 3 | Complete |
 | SRS-04 | Phase 3 | Complete |
 | PROG-01 | Phase 4 | Pending |
 | PROG-02 | Phase 4 | Pending |
