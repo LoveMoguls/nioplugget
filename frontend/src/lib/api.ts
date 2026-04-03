@@ -96,6 +96,14 @@ export const reviews = {
 	due: () => apiFetch('/api/reviews/due'),
 };
 
+// Progress
+export const progress = {
+	mine: () => apiFetch('/api/progress'),
+	child: (studentId: string) => apiFetch(`/api/children/${studentId}/progress`),
+	childSessions: (studentId: string) =>
+		apiFetch(`/api/children/${studentId}/progress/sessions`),
+};
+
 // Child auth
 export const childAuth = {
 	names: (parentEmail: string) =>

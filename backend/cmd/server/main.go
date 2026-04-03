@@ -21,6 +21,7 @@ import (
 	"github.com/trollstaven/nioplugget/backend/internal/database"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
+	"github.com/trollstaven/nioplugget/backend/internal/progress"
 	"github.com/trollstaven/nioplugget/backend/internal/srs"
 )
 
@@ -81,6 +82,10 @@ func main() {
 	// Initialize SRS handler
 	srsStore := srs.NewQueriesStore(q)
 	srsHandler := srs.NewSRSHandler(srsStore)
+
+	// Initialize progress handler
+	progressStore := progress.NewQueriesStore(q)
+	progressHandler := progress.NewProgressHandler(progressStore)
 
 	// Build router
 	r := chi.NewRouter()
@@ -167,6 +172,23 @@ func main() {
 		r.Use(jwtauth.Authenticator(tokenAuth))
 		r.Use(auth.ChildOnly)
 		r.Get("/due", srsHandler.ListDueReviews)
+	})
+
+	// Progress routes (child — own progress)
+	r.Route("/api/progress", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ChildOnly)
+		r.Get("/", progressHandler.GetStudentProgress)
+	})
+
+	// Parent progress routes (parent — child's progress)
+	r.Route("/api/children/{studentId}/progress", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ParentOnly)
+		r.Get("/", progressHandler.GetChildProgress)
+		r.Get("/sessions", progressHandler.ListChildSessions)
 	})
 
 	// Session/chat routes (child only)

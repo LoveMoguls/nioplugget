@@ -47,7 +47,15 @@
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">
-	<h1 class="mb-6 text-2xl font-bold">Välj ämne</h1>
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-2xl font-bold">Välj ämne</h1>
+		<a
+			href="/progress"
+			class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+		>
+			Min progress
+		</a>
+	</div>
 
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>

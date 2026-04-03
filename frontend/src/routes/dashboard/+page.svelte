@@ -336,15 +336,24 @@
 										{child.activated ? 'Aktiverad' : 'Väntar på aktivering'}
 									</p>
 								</div>
-								{#if !child.activated}
-									<Button
-										variant="outline"
-										size="sm"
-										onclick={() => handleGenerateInvite(child.id)}
-									>
-										Skapa ny länk
-									</Button>
-								{/if}
+								<div class="flex items-center gap-2">
+									{#if child.activated}
+										<a
+											href="/dashboard/child/{child.id}"
+											class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+										>
+											Se progress →
+										</a>
+									{:else}
+										<Button
+											variant="outline"
+											size="sm"
+											onclick={() => handleGenerateInvite(child.id)}
+										>
+											Skapa ny länk
+										</Button>
+									{/if}
+								</div>
 							</div>
 							{#if inviteLinks[child.id]}
 								<div class="mt-2 rounded bg-muted p-2">
