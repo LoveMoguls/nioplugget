@@ -15,6 +15,7 @@ import (
 
 	"github.com/trollstaven/nioplugget/backend/internal/apikey"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
+	"github.com/trollstaven/nioplugget/backend/internal/child"
 	"github.com/trollstaven/nioplugget/backend/internal/database"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
@@ -61,6 +62,11 @@ func main() {
 	apiKeyStore := apikey.NewQueriesStore(q)
 	apiKeyHandler := apikey.NewAPIKeyHandler(apiKeyStore, encSvc, "")
 
+	// Initialize child handler
+	childStore := child.NewQueriesStore(q, pool)
+	childRateLimiter := child.NewPINRateLimiter(5, 15*time.Minute)
+	childHandler := child.NewChildHandler(childStore, childRateLimiter)
+
 	// Build router
 	r := chi.NewRouter()
 
@@ -99,20 +105,25 @@ func main() {
 		r.Put("/", apiKeyHandler.Update)
 		r.Delete("/", apiKeyHandler.Delete)
 	})
+	// Child management routes (protected: parent JWT required)
 	r.Route("/api/children", func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotImplemented)
-		})
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Use(auth.ParentOnly)
+		r.Post("/", childHandler.Create)
+		r.Get("/", childHandler.List)
+		r.Post("/{id}/invite", childHandler.GenerateInvite)
 	})
+
+	// Public child routes
 	r.Route("/api/child", func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotImplemented)
-		})
+		r.Post("/login", childHandler.PINLogin)
+		r.Get("/names", childHandler.ListNames)
 	})
+
+	// Invite activation route (public)
 	r.Route("/api/invite", func(r chi.Router) {
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotImplemented)
-		})
+		r.Post("/{token}/activate", childHandler.Activate)
 	})
 
 	addr := ":" + port
