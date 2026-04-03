@@ -105,6 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Spaced Repetition | 3/3 | Complete   | 2026-04-03 |
 | 4. Progress Views | 3/3 | Complete   | 2026-04-03 |
 | 5. Polish + UI | 0/3 | Not started | - |
+| 6. NP-Based Exercise Prompts | 1/1 | Complete | 2026-04-03 |
 
 ### Phase 6: NP-Based Exercise Prompts
 **Goal**: All 37 exercise system prompts are rewritten to match real nationella prov patterns — NP verb hierarchy (Beskriv=E, Förklara=C, Resonera=A), authentic question formulations, subject-specific scoring awareness, and common student mistakes
@@ -113,4 +114,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 **Plans:** 1 plan
 
 Plans:
-- [ ] 06-01-PLAN.md — Rewrite all 37 exercise system prompts with NP-calibrated content (bio + samhälle + matte)
+- [x] 06-01-PLAN.md — Rewrite all 37 exercise system prompts with NP-calibrated content (bio + samhälle + matte)
