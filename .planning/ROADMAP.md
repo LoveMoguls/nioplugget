@@ -85,7 +85,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. All views are usable on a mobile phone (iOS Safari and Android Chrome) without horizontal scroll or broken layouts
   2. The UI is visually calm — no distracting animations, no streak counters, no gamification pressure
   3. A landing page exists that describes the service and provides registration and login entry points
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 05-01-PLAN.md — Visual identity: calm blue/green color palette (light + dark)
+  - [ ] 05-02-PLAN.md — Mobile responsiveness: hamburger menu, dark mode detection, touch targets, safe areas
+  - [ ] 05-03-PLAN.md — Landing page: Plughorse-style marketing page with registration/login
 
 ## Progress
 
@@ -98,4 +101,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Content + AI Chat | 0/5 | Not started | - |
 | 3. Spaced Repetition | 3/3 | Complete   | 2026-04-03 |
 | 4. Progress Views | 0/? | Not started | - |
-| 5. Polish + UI | 0/? | Not started | - |
+| 5. Polish + UI | 0/3 | Not started | - |
