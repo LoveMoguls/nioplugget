@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-03T09:42:43.394Z"
+last_updated: "2026-04-06T13:06:03.821Z"
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 19
-  completed_plans: 16
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 20
+  completed_plans: 18
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Progress: [████████░░] 80% (Phase 4 complete)
 | Phase 01-foundation P05 | 10 | 4 tasks | 20 files |
 | Phase 03-spaced-repetition P02 | 2 | 2 tasks | 5 files |
 | Phase 03-spaced-repetition P03 | 2 | 2 tasks | 7 files |
+| Phase 04-progress-views P01 | 0 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 03-spaced-repetition 03-03]: Goroutine for SM-2 update after EndSession — captures context+vars before launch, logs failure, never blocks response
 - [Phase 03-spaced-repetition 03-03]: ChatStore extended with UpsertReviewSchedule/GetReviewSchedule — avoids circular import between srs and chat packages
 - [Phase 03-spaced-repetition 03-03]: writeJSON/uuidToString helpers duplicated in srs/handler.go — circular import prevention over DRY
+- [Phase 04-progress-views]: Route parent progress under /api/children/{studentId}/progress to avoid conflicts with child /api/progress route
+- [Phase 04-progress-views]: writeJSON/uuidToString/parseUUID helpers duplicated in progress/handler.go — circular import prevention consistent with srs pattern
 
 ### Pending Todos
 
