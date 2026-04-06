@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: milestone_complete
-last_updated: "2026-04-06T15:42:19.913Z"
+milestone: v1.1
+milestone_name: Fler ämnen
+status: roadmap_ready
+last_updated: "2026-04-06T00:00:00.000Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 20
-  completed_plans: 20
+  total_phases: 2
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -18,21 +18,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Eleven lär sig genom dialog — AI:n ger aldrig direkta svar utan guidar eleven med ledande frågor
-**Current focus:** v1.1 — Fler ämnen
+**Current focus:** v1.1 — Fler ämnen (Kemi, Fysik, Geografi, Historia)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 7 — NO-ämnen (not started)
 Plan: —
-Status: Defining requirements for v1.1
-Last activity: 2026-04-06 — Milestone v1.1 started
+Status: Roadmap ready, awaiting plan-phase
+Last activity: 2026-04-06 — v1.1 roadmap created
 
 Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (v1.1 not started)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
+- Total plans completed: 0 (v1.1)
 - Average duration: —
 - Total execution time: —
 
@@ -47,14 +47,6 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (v1.
 - Trend: —
 
 *Updated after each plan completion*
-| Phase 01-foundation P03 | 12min | 3 tasks | 8 files |
-| Phase 01-foundation P04 | 5min | 2 tasks | 9 files |
-| Phase 01-foundation P05 | 10 | 4 tasks | 20 files |
-| Phase 03-spaced-repetition P02 | 2 | 2 tasks | 5 files |
-| Phase 03-spaced-repetition P03 | 2 | 2 tasks | 7 files |
-| Phase 04-progress-views P01 | 0 | 2 tasks | 6 files |
-| Phase 04-progress-views P02 | 0 | 2 tasks | 3 files |
-| Phase 04-progress-views P03 | 5min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -63,36 +55,9 @@ Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (v1.
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Init: BYOK model — parent stores own Claude API key (AES-256-GCM encrypted at rest)
-- Init: Parent-child account model — parent manages API key and oversight, child studies
-- Init: SM-2 spaced repetition for learning scheduling (SM-2 vs SM-2+ to be decided in Phase 3 planning)
-- Init: Socratic output filter approach (second Claude call vs regex) to be decided in Phase 2 planning
-- 01-01: Logger redacts at middleware level using header name denylist — no risk of accidentally logging secrets in handler code
-- 01-01: pgxpool configured with max 25 conns, min 5, 30s health check — tuned for moderate load
-- 01-01: sqlc with pgx/v5 driver and JSON tags — type-safe queries without ORM overhead
-- 01-02: ParentQuerier interface over *queries.Queries — enables test mocking without a live database
-- 01-02: Same 401 for unknown email and wrong password — prevents user enumeration attacks
-- 01-02: httpOnly + Secure + SameSite=Lax JWT cookie — XSS cannot steal token, CSRF mitigated via Lax same-site
-- [Phase 01-foundation]: APIKeyStore interface decouples handler from sqlc — enables unit testing without DB
-- [Phase 01-foundation]: Raw key never logged or returned — only masked format (sk-ant...****) in responses
-- [Phase 01-foundation]: QueriesStore adapter in store.go keeps handler independent of sqlc implementation details
-- [Phase 01-foundation]: ChildQuerier interface over concrete *queries.Queries — enables unit tests without live database, consistent with ParentQuerier pattern
-- [Phase 01-foundation]: UpdateStudentInvite via raw SQL in QueriesStore — sqlc lacks this query; passing queries.DBTX avoids touching generated files
-- [Phase 01-foundation]: In-memory PINRateLimiter with sync.Mutex — DB-backed rate limiting not needed for MVP, simpler and fast for single-process deployment
-- [Phase 01-foundation]: Flat SvelteKit routes instead of route groups — (parent)/login and (child)/login both resolve to /login causing fatal conflict
-- [Phase 01-foundation]: GET /api/auth/me endpoint added to backend for session restoration from httpOnly cookie on frontend page load
-- [Phase 01-foundation]: onMount auth guard in dashboard page instead of SvelteKit load function — SSR load runs before cookie-based store is hydrated
-- [Phase 03-spaced-repetition 03-01]: Pure function with now time.Time parameter for SM-2 Calculate — enables deterministic testing without time.Now() side effects
-- [Phase 03-spaced-repetition 03-01]: math.Max for EF floor enforcement (1.3) — simple, unambiguous, applied to both success and failure cases
-- [Phase 03-spaced-repetition]: ListDueReviews joins exercises/topics/subjects for enriched due-item rows - avoids N+1 in due-item listing
-- [Phase 03-spaced-repetition]: UpsertReviewSchedule uses ON CONFLICT DO UPDATE - idempotent after every session, no separate insert/update paths
-- [Phase 03-spaced-repetition 03-03]: Goroutine for SM-2 update after EndSession — captures context+vars before launch, logs failure, never blocks response
-- [Phase 03-spaced-repetition 03-03]: ChatStore extended with UpsertReviewSchedule/GetReviewSchedule — avoids circular import between srs and chat packages
-- [Phase 03-spaced-repetition 03-03]: writeJSON/uuidToString helpers duplicated in srs/handler.go — circular import prevention over DRY
-- [Phase 04-progress-views]: Route parent progress under /api/children/{studentId}/progress to avoid conflicts with child /api/progress route
-- [Phase 04-progress-views]: writeJSON/uuidToString/parseUUID helpers duplicated in progress/handler.go — circular import prevention consistent with srs pattern
-- [Phase 04-progress-views]: CSS-only bar charts for topic progress visualization — no chart library dependency
-- [Phase 04-progress-views]: Muted Tailwind 200-series colors (emerald/amber/rose) for progress bars — non-judgmental tone per CONTEXT.md
+- v1.0: NP verb hierarchy in prompts (E/C/A) — aligns with real nationella prov scoring (Phase 6 established pattern)
+- v1.0: Seed file pattern in backend/db/seeds/ — existing subject data files are the template
+- v1.1: NO subjects (Kemi + Fysik) grouped in Phase 7, SO subjects (Geografi + Historia) in Phase 8 — matches Swedish school discipline grouping
 
 ### Pending Todos
 
@@ -100,17 +65,15 @@ None yet.
 
 ### Roadmap Evolution
 
-- Phase 6 added: NP-Based Exercise Prompts — rewrite all system prompts based on real nationella prov patterns
+- Phases 7-8 added for v1.1: NO-ämnen (Kemi + Fysik) and SO-ämnen (Geografi + Historia)
 
 ### Blockers/Concerns
 
-- Phase 2: Per-exercise system prompt design is the highest-value, hardest-to-get-right work. Needs deliberate prompt review before seeding ~50-60 exercises.
-- Phase 2: Socratic guardrail implementation approach (output filter) needs a concrete decision before chat code is written.
-- Phase 3: SM-2 vs SM-2+ (Blue Raja variant) decision needed before SRS implementation begins.
-- General: GDPR data retention policy (e.g., "session messages deleted after 12 months") must be defined before launch.
+- Each subject needs NP-calibrated prompts consistent with Phase 6 quality — review real NP tasks for Kemi/Fysik/Geografi/Historia before writing seed data
+- Seed file content is the highest-value work: 48 exercises must map to actual Skolverket centralt innehåll for åk 9
 
 ## Session Continuity
 
 Last session: 2026-04-06
-Stopped at: Completed 04-03-PLAN.md — Parent child progress page and dashboard link
+Stopped at: v1.1 roadmap created
 Resume file: None

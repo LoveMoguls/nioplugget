@@ -51,32 +51,32 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| KEMI-01 | TBD | Pending |
-| KEMI-02 | TBD | Pending |
-| KEMI-03 | TBD | Pending |
-| KEMI-04 | TBD | Pending |
-| KEMI-05 | TBD | Pending |
-| FYS-01 | TBD | Pending |
-| FYS-02 | TBD | Pending |
-| FYS-03 | TBD | Pending |
-| FYS-04 | TBD | Pending |
-| FYS-05 | TBD | Pending |
-| GEO-01 | TBD | Pending |
-| GEO-02 | TBD | Pending |
-| GEO-03 | TBD | Pending |
-| GEO-04 | TBD | Pending |
-| GEO-05 | TBD | Pending |
-| HIST-01 | TBD | Pending |
-| HIST-02 | TBD | Pending |
-| HIST-03 | TBD | Pending |
-| HIST-04 | TBD | Pending |
-| HIST-05 | TBD | Pending |
+| KEMI-01 | Phase 7 | Pending |
+| KEMI-02 | Phase 7 | Pending |
+| KEMI-03 | Phase 7 | Pending |
+| KEMI-04 | Phase 7 | Pending |
+| KEMI-05 | Phase 7 | Pending |
+| FYS-01 | Phase 7 | Pending |
+| FYS-02 | Phase 7 | Pending |
+| FYS-03 | Phase 7 | Pending |
+| FYS-04 | Phase 7 | Pending |
+| FYS-05 | Phase 7 | Pending |
+| GEO-01 | Phase 8 | Pending |
+| GEO-02 | Phase 8 | Pending |
+| GEO-03 | Phase 8 | Pending |
+| GEO-04 | Phase 8 | Pending |
+| GEO-05 | Phase 8 | Pending |
+| HIST-01 | Phase 8 | Pending |
+| HIST-02 | Phase 8 | Pending |
+| HIST-03 | Phase 8 | Pending |
+| HIST-04 | Phase 8 | Pending |
+| HIST-05 | Phase 8 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 20 total
-- Mapped to phases: 0 (roadmap not yet created)
-- Unmapped: 20 ⚠️
+- Mapped to phases: 20 (Phase 7: 10, Phase 8: 10)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-06*
-*Last updated: 2026-04-06 after v1.1 milestone start*
+*Last updated: 2026-04-06 — traceability filled after roadmap creation*
