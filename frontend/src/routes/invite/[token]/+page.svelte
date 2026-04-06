@@ -8,20 +8,17 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { invite as inviteApi, getErrorMessage } from '$lib/api';
 
-	let token = $derived($page.params.token);
+	let token = $derived($page.params.token ?? '');
 	let name = $state('');
 	let pin = $state('');
 	let pinConfirm = $state('');
 	let loading = $state(false);
 	let errorMsg = $state('');
-	let successMsg = $state('');
-	let activated = $state(false);
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		errorMsg = '';
 
-		// Validate
 		if (!name.trim()) {
 			errorMsg = 'Ange ditt namn.';
 			return;
@@ -37,10 +34,13 @@
 
 		loading = true;
 		try {
-			await inviteApi.activate(token, name.trim(), pin);
-			activated = true;
-			successMsg = `Välkommen ${name.trim()}! Ditt konto är aktiverat.`;
-			setTimeout(() => goto('/child/login'), 3000);
+			const data = (await inviteApi.activate(token, name.trim(), pin)) as {
+				parentEmail?: string;
+			};
+			if (data?.parentEmail) {
+				localStorage.setItem('childParentEmail', data.parentEmail);
+			}
+			goto('/study');
 		} catch (err: unknown) {
 			const e = err as { status?: number; data?: { error?: string } };
 			if (e.status === 404 || e.status === 410) {
@@ -67,66 +67,57 @@
 			<CardDescription>Välj ett namn och en PIN-kod för att komma igång.</CardDescription>
 		</CardHeader>
 		<CardContent>
-			{#if activated}
-				<Alert class="mb-4">
-					<AlertDescription>{successMsg}</AlertDescription>
-				</Alert>
-				<p class="text-center text-sm text-muted-foreground">
-					Du skickas vidare till inloggningen om några sekunder...
-				</p>
-			{:else}
-				<form onsubmit={handleSubmit} class="flex flex-col gap-4">
-					{#if errorMsg}
-						<Alert variant="destructive">
-							<AlertDescription>{errorMsg}</AlertDescription>
-						</Alert>
-					{/if}
+			<form onsubmit={handleSubmit} class="flex flex-col gap-4">
+				{#if errorMsg}
+					<Alert variant="destructive">
+						<AlertDescription>{errorMsg}</AlertDescription>
+					</Alert>
+				{/if}
 
-					<div class="flex flex-col gap-1.5">
-						<Label for="name">Ditt namn</Label>
-						<Input
-							id="name"
-							type="text"
-							bind:value={name}
-							placeholder="Ditt förnamn"
-							autocomplete="given-name"
-							required
-						/>
-					</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="name">Ditt namn</Label>
+					<Input
+						id="name"
+						type="text"
+						bind:value={name}
+						placeholder="Ditt förnamn"
+						autocomplete="given-name"
+						required
+					/>
+				</div>
 
-					<div class="flex flex-col gap-1.5">
-						<Label for="pin">PIN-kod (4 siffror)</Label>
-						<Input
-							id="pin"
-							type="password"
-							inputmode="numeric"
-							pattern="[0-9]*"
-							maxlength={4}
-							bind:value={pin}
-							placeholder="••••"
-							autocomplete="new-password"
-						/>
-					</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="pin">PIN-kod (4 siffror)</Label>
+					<Input
+						id="pin"
+						type="password"
+						inputmode="numeric"
+						pattern="[0-9]*"
+						maxlength={4}
+						bind:value={pin}
+						placeholder="••••"
+						autocomplete="new-password"
+					/>
+				</div>
 
-					<div class="flex flex-col gap-1.5">
-						<Label for="pin-confirm">Bekräfta PIN-kod</Label>
-						<Input
-							id="pin-confirm"
-							type="password"
-							inputmode="numeric"
-							pattern="[0-9]*"
-							maxlength={4}
-							bind:value={pinConfirm}
-							placeholder="••••"
-							autocomplete="new-password"
-						/>
-					</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="pin-confirm">Bekräfta PIN-kod</Label>
+					<Input
+						id="pin-confirm"
+						type="password"
+						inputmode="numeric"
+						pattern="[0-9]*"
+						maxlength={4}
+						bind:value={pinConfirm}
+						placeholder="••••"
+						autocomplete="new-password"
+					/>
+				</div>
 
-					<Button type="submit" class="w-full" disabled={loading}>
-						{loading ? 'Aktiverar...' : 'Aktivera konto'}
-					</Button>
-				</form>
-			{/if}
+				<Button type="submit" class="w-full" disabled={loading}>
+					{loading ? 'Aktiverar...' : 'Aktivera konto'}
+				</Button>
+			</form>
 		</CardContent>
 	</Card>
 </div>

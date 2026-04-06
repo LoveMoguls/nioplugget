@@ -8,6 +8,7 @@
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { apiKey as apiKeyApi, children as childrenApi, getErrorMessage } from '$lib/api';
 	import { user, isLoggedIn, isParent } from '$lib/stores/auth';
+	import { browser } from '$app/environment';
 
 	// API Key state
 	interface ApiKeyData {
@@ -157,12 +158,28 @@
 
 	async function handleGenerateInvite(childId: string) {
 		try {
-			const data = (await childrenApi.generateInvite(childId)) as { inviteToken: string; inviteUrl?: string };
-			const token = data.inviteToken || data.inviteUrl || '';
-			const link = token.startsWith('http') ? token : `${window.location.origin}/invite/${token}`;
+			const data = (await childrenApi.generateInvite(childId)) as { inviteURL?: string; inviteUrl?: string; inviteToken?: string };
+			const link = data.inviteURL || data.inviteUrl || data.inviteToken || '';
 			inviteLinks = { ...inviteLinks, [childId]: link };
 		} catch (err) {
 			childError = getErrorMessage(err, 'Kunde inte skapa inbjudningslänk.');
+		}
+	}
+
+	async function handleLoginAs(childId: string) {
+		try {
+			const data = (await childrenApi.loginAs(childId)) as {
+				id: string;
+				name: string;
+				parentEmail?: string;
+			};
+			if (browser && data?.parentEmail) {
+				localStorage.setItem('childParentEmail', data.parentEmail);
+			}
+			user.setUser({ id: data.id, email: '', role: 'child' });
+			goto('/study');
+		} catch (err) {
+			childError = getErrorMessage(err, 'Kunde inte starta session.');
 		}
 	}
 
@@ -339,12 +356,21 @@
 								</div>
 								<div class="flex items-center gap-2">
 									{#if child.activated}
-										<a
-											href="/dashboard/child/{child.id}"
-											class="text-sm text-muted-foreground transition-colors hover:text-foreground"
-										>
-											Se progress →
-										</a>
+										<div class="flex items-center gap-2">
+											<Button
+												variant="default"
+												size="sm"
+												onclick={() => handleLoginAs(child.id)}
+											>
+												Starta session
+											</Button>
+											<a
+												href="/dashboard/child/{child.id}"
+												class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+											>
+												Se progress →
+											</a>
+										</div>
 									{:else}
 										<Button
 											variant="outline"
