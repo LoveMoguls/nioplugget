@@ -2,67 +2,86 @@
 
 ## What This Is
 
-En AI-driven studieapp för nationella proven i åk 9. Elever chattar med en AI-lärare som ställer ledande frågor istället för att ge färdiga svar. Fokus på tre ämnen: Biologi (NO), Samhällskunskap (SO) och Matematik. Inspirerad av Plughorse men specialiserad för nationella provet.
+En AI-driven studieapp för nationella proven i åk 9. Elever chattar med en AI-lärare som ställer ledande frågor istället för att ge färdiga svar — aldrig direkta svar, alltid dialog. Ämnen: Biologi, Samhällskunskap och Matematik med 37 NP-kalibrerade övningspass mappade mot Skolverkets centrala innehåll. Förälder tillhandahåller egen Claude API-nyckel (BYOK), hanterar barnprofiler och kan följa barnets progress.
 
 ## Core Value
 
-Eleven lär sig genom dialog — AI:n ger aldrig direkta svar utan guidar eleven med ledande frågor, anpassade efter elevens nivå.
+Eleven lär sig genom dialog — AI:n ger aldrig direkta svar utan guidar eleven med ledande frågor, anpassade efter nationella provets betygsnivåer (E/C/A).
 
 ## Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Förälder kan registrera sig och logga in — v1.0
+- ✓ Förälder kan lägga in sin Claude API-nyckel (krypterad AES-256-GCM) — v1.0
+- ✓ Förälder kan skapa barnprofil via invite-länk — v1.0
+- ✓ Barn kan logga in via invite-länk + PIN (rate-limited) — v1.0
+- ✓ Elev kan välja ämne, ämnesområde och övning (3-stegsnavigation) — v1.0
+- ✓ Elev kan chatta med AI-lärare i dialogbaserade övningspass — v1.0
+- ✓ AI ställer ledande frågor, ger aldrig direkta svar — v1.0
+- ✓ 37 övningspass med NP-kalibrerade system-prompts (NP-verbhierarki: Beskriv/Förklara/Resonera) — v1.0 (Phase 6)
+- ✓ Sessioner sparas med meddelanden och AI-genererad score (1-5) — v1.0
+- ✓ Spaced repetition (SM-2) planerar repetition baserat på score — v1.0
+- ✓ Startsidan visar "Dags att repetera"-kort — v1.0
+- ✓ Mobilanpassat (mobile-first), responsiv design med hamburger-meny — v1.0
+- ✓ Rent, lugnt UI (blå/grön palett, systemets mörkt/ljust, inga distraktioner) — v1.0
+- ✓ Landningssida med hero, features, how-it-works, BYOK-förklaring och FAQ — v1.0
+- ✓ Progress-vy visar styrkor/svagheter per ämne (elev + förälder) — v1.0
 
 ### Active
 
-- [ ] Förälder kan registrera sig och logga in
-- [ ] Förälder kan lägga in sin Claude API-nyckel (krypterad)
-- [ ] Förälder kan skapa barnprofil via invite-länk
-- [ ] Barn kan logga in via invite-länk + pin
-- [ ] Elev kan välja ämne, ämnesområde och övning
-- [ ] Elev kan chatta med AI-lärare i dialogbaserade övningspass
-- [ ] AI ställer ledande frågor, ger aldrig direkta svar
-- [ ] Övningspass har skräddarsydda system-prompts per övning
-- [ ] Sessioner sparas med meddelanden och score
-- [ ] Spaced repetition (SM-2) planerar repetition baserat på score
-- [ ] Startsidan visar "Dags att repetera"-kort
-- [ ] Färdiga övningspass mappade mot kursplanen (~50-60 st)
-- [ ] Mobilanpassat, rent och lugnt UI
-- [ ] Progress-vy visar styrkor/svagheter per ämne
+*(Next milestone requirements go here)*
 
 ### Out of Scope
 
-- Betalning/prenumeration — användaren kopplar sin egen Claude API-nyckel
-- Fotouppladdning av läxor — bara färdiga övningspass
-- Realtidschat mellan elever — individuell AI-dialog
-- Mobilapp — webbaserat, mobilanpassat
-- Andra ämnen utöver Bio, Samhälle, Matte — kan läggas till senare
+- Betalning/prenumeration — BYOK-modell, användaren kopplar sin egen Claude API-nyckel
+- Fotouppladdning av läxor — bara färdiga övningspass för kontrollerad kvalitet
+- Realtidschat mellan elever — individuell AI-dialog, inte socialt
+- Mobilapp (native) — web-first, mobilanpassat — native app i framtiden
+- Gamification (streaks, poäng, badges) — anti-feature: skapar ångest, inte lärande
+- OAuth/social login — e-post/lösenord räcker för v1
+- Mörkt/ljust tema-toggle — följ systemets inställning
 
 ## Context
 
-- Inspirerad av Plughorse (plughorse.com) som erbjuder AI-baserad läxhjälp för åk 7-9
-- Nationella proven i åk 9 är viktiga milstolpar — stort behov av övningsmaterial
-- Kursinnehåll mappat mot Skolverkets centrala innehåll
-- Pedagogisk modell: "Frågor, inte svar" + spaced repetition
-- Ämnen: Biologi (Ekologi, Kroppen, Genetik, Cellen), Samhällskunskap (Demokrati, Rättigheter, Ekonomi, Lag & rätt), Matematik (Algebra, Geometri, Statistik, Samband & förändring)
+**Shipped v1.0 MVP 2026-04-06.**
 
-## Constraints
+- ~10,400 LOC (Go + TypeScript + Svelte)
+- Stack: Go (Chi) + SvelteKit (shadcn-svelte, Tailwind 4) + PostgreSQL + Claude API
+- 37 NP-kalibrerade övningspass: Biologi (12), Samhällskunskap (13), Matematik (12)
+- All 39 v1 requirements delivered
+- Timeline: 3 days (2026-04-03 → 2026-04-06)
 
-- **Tech stack**: Go (Chi) + SvelteKit (shadcn-svelte) + PostgreSQL + Claude API — matchar befintlig erfarenhet
-- **API-nyckel**: Användaren tillhandahåller sin egen Claude API-nyckel, krypterad med AES-256 at rest
-- **Säkerhet**: AI:n ska vara strikt begränsad till ämnet, inte kunna utnyttjas för fusk
-- **UX**: Mobilanpassat, rent lugnt UI, korta pass (10-15 min)
+Known issues / technical debt:
+- GDPR data retention policy (session messages) not defined — decide before launch
+- In-memory PIN rate limiter resets on server restart (acceptable for single-process MVP)
+- AI adaptation (CHAT-04) is prompt-based, not ML-driven — may need refinement based on real usage
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Monorepo med Go backend + SvelteKit frontend | Matchar befintlig erfarenhet från trade-analyst, tydlig separation | — Pending |
-| Användaren kopplar egen Claude API-nyckel | Inget behov av betalningsinfrastruktur, open source-vänligt | — Pending |
-| SM-2 spaced repetition | Beprövad algoritm, enkel att implementera, effektiv för inlärning | — Pending |
-| Färdiga övningspass istället för fritext | Mer kontrollerad upplevelse, bättre kvalitet på AI-dialog | — Pending |
-| Förälder-barn-modell (som Plughorse) | Föräldern hanterar API-nyckel och överblick, barnet studerar | — Pending |
+| Monorepo: Go backend + SvelteKit frontend | Matches existing experience, clear separation | ✓ Good — clean build, no friction |
+| BYOK (Bring Your Own Key) | No payment infrastructure, open source-friendly | ✓ Good — simplifies v1 significantly |
+| SM-2 spaced repetition | Proven algorithm, simple to implement, effective | ✓ Good — SM-2 (not SM-2+) sufficient for MVP |
+| Färdiga övningspass (not free-text) | Controlled experience, better AI dialogue quality | ✓ Good — 37 exercises cover NP curriculum well |
+| Förälder-barn-modell | Parent handles API key and oversight, child studies | ✓ Good — clean separation of concerns |
+| Socratic guardrail: separate scoring Claude call | Avoids regex fragility for output filtering | ✓ Good — reliable AI-based session scoring |
+| SM-2 (not SM-2+ Blue Raja) | Standard SM-2 sufficient for MVP | ✓ Good — simpler, easier to reason about |
+| httpOnly + Secure + SameSite=Lax JWT cookie | XSS cannot steal token, CSRF mitigated | ✓ Good — secure auth baseline |
+| Flat SvelteKit routes (not route groups) | Route groups caused /login conflict | ✓ Good — avoided fatal routing bug |
+| CSS-only bar charts for progress | No chart library dependency | ✓ Good — lightweight, maintainable |
+| NP verb hierarchy in prompts (E/C/A) | Aligns with real nationella prov scoring | ✓ Good — Phase 6 upgrade significantly improves quality |
+| Goroutine for SM-2 update after session | Never blocks response | ✓ Good — clean async pattern |
+| Logger redacts at middleware level | No risk of accidentally logging secrets | ✓ Good — security baseline from day 1 |
+
+## Constraints
+
+- **Tech stack**: Go (Chi) + SvelteKit (shadcn-svelte) + PostgreSQL + Claude API — matches existing experience
+- **API key**: User provides own Claude API key, encrypted AES-256-GCM at rest
+- **Security**: AI strictly limited to subject — cannot be exploited for cheating
+- **UX**: Mobile-first, calm UI, short sessions (10-15 min)
+- **Language**: Swedish UI (target audience is Swedish åk 9 students and parents)
 
 ---
-*Last updated: 2026-04-03 after initialization*
+*Last updated: 2026-04-06 after v1.0 milestone*
