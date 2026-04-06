@@ -18,15 +18,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-06)
 
 **Core value:** Eleven lär sig genom dialog — AI:n ger aldrig direkta svar utan guidar eleven med ledande frågor
-**Current focus:** Planning next milestone
+**Current focus:** v1.1 — Fler ämnen
 
 ## Current Position
 
-Milestone v1.0 MVP — SHIPPED 2026-04-06
-All 6 phases, 20 plans complete.
-Last activity: 2026-04-06 — Milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v1.1
+Last activity: 2026-04-06 — Milestone v1.1 started
 
-Progress: [████████████████████] 100% (v1.0 complete)
+Progress: [░░░░░░░░░░░░░░░░░░░░] 0% (v1.1 not started)
 
 ## Performance Metrics
 

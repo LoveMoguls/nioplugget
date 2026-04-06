@@ -2,7 +2,18 @@
 
 ## What This Is
 
-En AI-driven studieapp för nationella proven i åk 9. Elever chattar med en AI-lärare som ställer ledande frågor istället för att ge färdiga svar — aldrig direkta svar, alltid dialog. Ämnen: Biologi, Samhällskunskap och Matematik med 37 NP-kalibrerade övningspass mappade mot Skolverkets centrala innehåll. Förälder tillhandahåller egen Claude API-nyckel (BYOK), hanterar barnprofiler och kan följa barnets progress.
+En AI-driven studieapp för nationella proven i åk 9. Elever chattar med en AI-lärare som ställer ledande frågor istället för att ge färdiga svar — aldrig direkta svar, alltid dialog. Ämnen: Biologi, Samhällskunskap, Matematik, Kemi, Fysik, Geografi och Historia med NP-kalibrerade övningspass mappade mot Skolverkets centrala innehåll. Förälder tillhandahåller egen Claude API-nyckel (BYOK), hanterar barnprofiler och kan följa barnets progress.
+
+## Current Milestone: v1.1 Fler ämnen
+
+**Goal:** Expand subject coverage from 3 to 7 by adding Kemi, Fysik, Geografi och Historia — same NP-calibrated quality as v1.0.
+
+**Target features:**
+- Kemi: 4 ämnesområden × 3 övningar (12 övningar)
+- Fysik: 4 ämnesområden × 3 övningar (12 övningar)
+- Geografi: 4 ämnesområden × 3 övningar (12 övningar)
+- Historia: 4 ämnesområden × 3 övningar (12 övningar)
+- Alla med NP-kalibrerade system-prompts (E/C/A verbhierarki)
 
 ## Core Value
 
@@ -30,7 +41,10 @@ Eleven lär sig genom dialog — AI:n ger aldrig direkta svar utan guidar eleven
 
 ### Active
 
-*(Next milestone requirements go here)*
+- [ ] Kemi: 4 ämnesområden med 3 NP-kalibrerade övningar per område
+- [ ] Fysik: 4 ämnesområden med 3 NP-kalibrerade övningar per område
+- [ ] Geografi: 4 ämnesområden med 3 NP-kalibrerade övningar per område
+- [ ] Historia: 4 ämnesområden med 3 NP-kalibrerade övningar per område
 
 ### Out of Scope
 
@@ -84,4 +98,4 @@ Known issues / technical debt:
 - **Language**: Swedish UI (target audience is Swedish åk 9 students and parents)
 
 ---
-*Last updated: 2026-04-06 after v1.0 milestone*
+*Last updated: 2026-04-06 after v1.1 milestone start*
