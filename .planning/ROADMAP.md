@@ -37,7 +37,12 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. Elev kan navigera till Fysik i ämnesväljaren och se 4 ämnesområden (Krafter och rörelse, Elektricitet och magnetism, Energi och energiomvandlingar, Astronomi och universum)
   3. Elev kan starta och genomföra ett övningspass inom valfritt Kemi- eller Fysik-ämnesområde — AI:n svarar med NP-kalibrerade frågor på rätt nivå (E/C/A)
   4. Varje ämnesområde erbjuder 3 övningspass (totalt 24 pass för Kemi + Fysik)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Migration scaffold: subjects, topics, exercise stubs for Kemi + Fysik
+- [ ] 07-02-PLAN.md — NP-calibrated system prompts for all 12 Kemi exercises
+- [ ] 07-03-PLAN.md — NP-calibrated system prompts for all 12 Fysik exercises, migration run
 
 ### Phase 8: SO-ämnen
 **Goal**: Elever kan träna Geografi och Historia via NP-kalibrerade övningspass
@@ -60,7 +65,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 | 4. Progress Views | v1.0 | 3/3 | Complete | 2026-04-06 |
 | 5. Polish + UI | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 6. NP-Based Exercise Prompts | v1.0 | 1/1 | Complete | 2026-04-03 |
-| 7. NO-ämnen | v1.1 | 0/? | Not started | - |
+| 7. NO-ämnen | v1.1 | 0/3 | Not started | - |
 | 8. SO-ämnen | v1.1 | 0/? | Not started | - |
 
 ---
