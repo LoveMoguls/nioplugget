@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-07T20:36:48.008Z"
+last_updated: "2026-04-07T20:43:57.715Z"
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
 ---
 
 # Project State
@@ -22,10 +22,10 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 
 ## Current Position
 
-Phase: 8 — SO-ämnen (in progress)
-Plan: 2 of 3 complete
-Status: Phase 8 Plan 02 complete — all 12 Geografi NP-calibrated prompts written
-Last activity: 2026-04-07 — Phase 8 Plan 02 executed
+Phase: 8 — SO-ämnen (complete)
+Plan: 3 of 3 complete
+Status: Phase 8 Plan 03 complete — all 12 Historia NP-calibrated prompts written, migration 007 applied
+Last activity: 2026-04-07 — Phase 8 Plan 03 executed
 
 Progress: [████████████████████] 100% (v1.1: 1/3 plans in Phase 8)
 
@@ -52,6 +52,7 @@ Progress: [████████████████████] 100% (v
 | Phase 07-no-amnen P03 | 4min | 2 tasks | 1 files |
 | Phase 08-so-amnen P01 | 5min | 2 tasks | 2 files |
 | Phase 08-so-amnen P02 | 12min | 2 tasks | 1 files |
+| Phase 08-so-amnen P03 | 15min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ Recent decisions affecting current work:
 - [Phase 07-no-amnen]: No apostrophes in Fysik prompt text — Ohms lag without possessive to avoid SQL escaping issues
 - [Phase 08-so-amnen]: Geografi assigned display_order=6, Historia display_order=7 — continues established sequence
 - [Phase 08-so-amnen]: Delprov A1/A2 framing used for Geografi — same as Kemi/Fysik in Phase 7
+- [Phase 08-so-amnen]: No apostrophes in Historia prompt text — Hitlers uppgång not Hitler's, compound nouns for possessives — avoids SQL escaping issues
 
 ### Pending Todos
 
@@ -85,5 +87,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-07
-Stopped at: Completed 08-02-PLAN.md
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
