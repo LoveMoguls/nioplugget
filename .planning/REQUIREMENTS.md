@@ -27,7 +27,7 @@
 - [x] **GEO-02**: System har färdiga övningspass för Geografi — Klimat och klimatförändringar (klimatzoner, global uppvärmning, extremväder)
 - [x] **GEO-03**: System har färdiga övningspass för Geografi — Naturresurser och hållbarhet (vatten, energi, hållbar utveckling)
 - [x] **GEO-04**: System har färdiga övningspass för Geografi — Geopolitik och handel (länder, ekonomiska system, konflikter)
-- [ ] **GEO-05**: Alla Geografi-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
+- [x] **GEO-05**: Alla Geografi-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
 
 ### Historia
 
@@ -65,7 +65,7 @@
 | GEO-02 | Phase 8 | Complete |
 | GEO-03 | Phase 8 | Complete |
 | GEO-04 | Phase 8 | Complete |
-| GEO-05 | Phase 8 | Pending |
+| GEO-05 | Phase 8 | Complete |
 | HIST-01 | Phase 8 | Complete |
 | HIST-02 | Phase 8 | Complete |
 | HIST-03 | Phase 8 | Complete |

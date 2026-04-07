@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-07T20:31:30.502Z"
+last_updated: "2026-04-07T20:36:48.008Z"
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 26
-  completed_plans: 24
+  completed_plans: 25
 ---
 
 # Project State
@@ -23,9 +23,9 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 8 — SO-ämnen (in progress)
-Plan: 1 of 3 complete
-Status: Phase 8 Plan 01 complete — migration scaffold for Geografi and Historia created
-Last activity: 2026-04-07 — Phase 8 Plan 01 executed
+Plan: 2 of 3 complete
+Status: Phase 8 Plan 02 complete — all 12 Geografi NP-calibrated prompts written
+Last activity: 2026-04-07 — Phase 8 Plan 02 executed
 
 Progress: [████████████████████] 100% (v1.1: 1/3 plans in Phase 8)
 
@@ -51,6 +51,7 @@ Progress: [████████████████████] 100% (v
 | Phase 07-no-amnen P02 | 2min | 2 tasks | 1 files |
 | Phase 07-no-amnen P03 | 4min | 2 tasks | 1 files |
 | Phase 08-so-amnen P01 | 5min | 2 tasks | 2 files |
+| Phase 08-so-amnen P02 | 12min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,7 @@ Recent decisions affecting current work:
 - [Phase 07-no-amnen]: E-nivå Fysik prompts reference Delprov A1 faktafrågor, C and A-nivå reference Delprov A2 — consistent with Kemi pattern
 - [Phase 07-no-amnen]: No apostrophes in Fysik prompt text — Ohms lag without possessive to avoid SQL escaping issues
 - [Phase 08-so-amnen]: Geografi assigned display_order=6, Historia display_order=7 — continues established sequence
+- [Phase 08-so-amnen]: Delprov A1/A2 framing used for Geografi — same as Kemi/Fysik in Phase 7
 
 ### Pending Todos
 
@@ -83,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-04-07
-Stopped at: Completed 08-01-PLAN.md
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None
