@@ -71,7 +71,7 @@ Plans:
 | 5. Polish + UI | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 6. NP-Based Exercise Prompts | v1.0 | 1/1 | Complete | 2026-04-03 |
 | 7. NO-ämnen | v1.1 | 3/3 | Complete | 2026-04-07 |
-| 8. SO-ämnen | v1.1 | 0/3 | Not started | - |
+| 8. SO-ämnen | 1/3 | In Progress|  | - |
 
 ---
 *v1.0 MVP shipped 2026-04-06 — 6 phases, 20 plans, ~10,400 LOC*

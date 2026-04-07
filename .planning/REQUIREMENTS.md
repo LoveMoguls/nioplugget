@@ -23,18 +23,18 @@
 
 ### Geografi
 
-- [ ] **GEO-01**: System har färdiga övningspass för Geografi — Befolkning och urbanisering (migration, städer, globalisering)
-- [ ] **GEO-02**: System har färdiga övningspass för Geografi — Klimat och klimatförändringar (klimatzoner, global uppvärmning, extremväder)
-- [ ] **GEO-03**: System har färdiga övningspass för Geografi — Naturresurser och hållbarhet (vatten, energi, hållbar utveckling)
-- [ ] **GEO-04**: System har färdiga övningspass för Geografi — Geopolitik och handel (länder, ekonomiska system, konflikter)
+- [x] **GEO-01**: System har färdiga övningspass för Geografi — Befolkning och urbanisering (migration, städer, globalisering)
+- [x] **GEO-02**: System har färdiga övningspass för Geografi — Klimat och klimatförändringar (klimatzoner, global uppvärmning, extremväder)
+- [x] **GEO-03**: System har färdiga övningspass för Geografi — Naturresurser och hållbarhet (vatten, energi, hållbar utveckling)
+- [x] **GEO-04**: System har färdiga övningspass för Geografi — Geopolitik och handel (länder, ekonomiska system, konflikter)
 - [ ] **GEO-05**: Alla Geografi-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
 
 ### Historia
 
-- [ ] **HIST-01**: System har färdiga övningspass för Historia — Industrialismens tid (1800-talets industrialisering, sociala rörelser)
-- [ ] **HIST-02**: System har färdiga övningspass för Historia — De två världskrigen (orsaker, Förintelsen, efterdyningar)
-- [ ] **HIST-03**: System har färdiga övningspass för Historia — Kalla kriget (bipolar värld, dekolonisation, kapprustning)
-- [ ] **HIST-04**: System har färdiga övningspass för Historia — 1900-talets politiska rörelser (fascism, kommunism, demokratisering)
+- [x] **HIST-01**: System har färdiga övningspass för Historia — Industrialismens tid (1800-talets industrialisering, sociala rörelser)
+- [x] **HIST-02**: System har färdiga övningspass för Historia — De två världskrigen (orsaker, Förintelsen, efterdyningar)
+- [x] **HIST-03**: System har färdiga övningspass för Historia — Kalla kriget (bipolar värld, dekolonisation, kapprustning)
+- [x] **HIST-04**: System har färdiga övningspass för Historia — 1900-talets politiska rörelser (fascism, kommunism, demokratisering)
 - [ ] **HIST-05**: Alla Historia-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
 
 ## Out of Scope
@@ -61,15 +61,15 @@
 | FYS-03 | Phase 7 | Complete |
 | FYS-04 | Phase 7 | Complete |
 | FYS-05 | Phase 7 | Complete |
-| GEO-01 | Phase 8 | Pending |
-| GEO-02 | Phase 8 | Pending |
-| GEO-03 | Phase 8 | Pending |
-| GEO-04 | Phase 8 | Pending |
+| GEO-01 | Phase 8 | Complete |
+| GEO-02 | Phase 8 | Complete |
+| GEO-03 | Phase 8 | Complete |
+| GEO-04 | Phase 8 | Complete |
 | GEO-05 | Phase 8 | Pending |
-| HIST-01 | Phase 8 | Pending |
-| HIST-02 | Phase 8 | Pending |
-| HIST-03 | Phase 8 | Pending |
-| HIST-04 | Phase 8 | Pending |
+| HIST-01 | Phase 8 | Complete |
+| HIST-02 | Phase 8 | Complete |
+| HIST-03 | Phase 8 | Complete |
+| HIST-04 | Phase 8 | Complete |
 | HIST-05 | Phase 8 | Pending |
 
 **Coverage:**
