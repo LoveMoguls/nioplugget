@@ -19,7 +19,7 @@
 - [x] **FYS-02**: System har färdiga övningspass för Fysik — Elektricitet och magnetism (kretsar, elektromagnetism, induktion)
 - [x] **FYS-03**: System har färdiga övningspass för Fysik — Energi och energiomvandlingar (mekanisk, termisk, elektrisk energi)
 - [x] **FYS-04**: System har färdiga övningspass för Fysik — Astronomi och universum (stjärnor, solsystemet, Big Bang)
-- [ ] **FYS-05**: Alla Fysik-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
+- [x] **FYS-05**: Alla Fysik-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
 
 ### Geografi
 
@@ -60,7 +60,7 @@
 | FYS-02 | Phase 7 | Complete |
 | FYS-03 | Phase 7 | Complete |
 | FYS-04 | Phase 7 | Complete |
-| FYS-05 | Phase 7 | Pending |
+| FYS-05 | Phase 7 | Complete |
 | GEO-01 | Phase 8 | Pending |
 | GEO-02 | Phase 8 | Pending |
 | GEO-03 | Phase 8 | Pending |

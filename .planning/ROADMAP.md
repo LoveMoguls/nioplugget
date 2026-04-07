@@ -23,7 +23,7 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
 
 **v1.1 Fler ämnen:**
 
-- [ ] **Phase 7: NO-ämnen** — Kemi och Fysik med NP-kalibrerade övningspass
+- [x] **Phase 7: NO-ämnen** — Kemi och Fysik med NP-kalibrerade övningspass (completed 2026-04-07)
 - [ ] **Phase 8: SO-ämnen** — Geografi och Historia med NP-kalibrerade övningspass
 
 ## Phase Details
@@ -65,7 +65,7 @@ Plans:
 | 4. Progress Views | v1.0 | 3/3 | Complete | 2026-04-06 |
 | 5. Polish + UI | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 6. NP-Based Exercise Prompts | v1.0 | 1/1 | Complete | 2026-04-03 |
-| 7. NO-ämnen | 2/3 | In Progress|  | - |
+| 7. NO-ämnen | 3/3 | Complete   | 2026-04-07 | - |
 | 8. SO-ämnen | v1.1 | 0/? | Not started | - |
 
 ---
