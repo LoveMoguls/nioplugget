@@ -11,7 +11,7 @@
 - [x] **KEMI-02**: System har färdiga övningspass för Kemi — Kemiska reaktioner (syror/baser, pH, förbränning)
 - [x] **KEMI-03**: System har färdiga övningspass för Kemi — Kemikalier i vardagen (lösningar, kemikaliesäkerhet, blandningar)
 - [x] **KEMI-04**: System har färdiga övningspass för Kemi — Kemi och hållbar utveckling (miljökemi, fossila bränslen, alternativ energi)
-- [ ] **KEMI-05**: Alla Kemi-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki (Beskriv/Förklara/Resonera)
+- [x] **KEMI-05**: Alla Kemi-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki (Beskriv/Förklara/Resonera)
 
 ### Fysik
 
@@ -55,7 +55,7 @@
 | KEMI-02 | Phase 7 | Complete |
 | KEMI-03 | Phase 7 | Complete |
 | KEMI-04 | Phase 7 | Complete |
-| KEMI-05 | Phase 7 | Pending |
+| KEMI-05 | Phase 7 | Complete |
 | FYS-01 | Phase 7 | Complete |
 | FYS-02 | Phase 7 | Complete |
 | FYS-03 | Phase 7 | Complete |

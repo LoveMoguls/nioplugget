@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-06T18:54:49.594Z"
+last_updated: "2026-04-07T17:19:21.609Z"
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 23
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md (updated 2026-04-06)
 ## Current Position
 
 Phase: 7 — NO-ämnen (in progress)
-Plan: 1 of 3 complete
-Status: Plan 01 done — migration scaffold for Kemi+Fysik created
-Last activity: 2026-04-06 — Phase 7 Plan 01 executed
+Plan: 2 of 3 complete
+Status: Plan 02 done — 12 Kemi NP-calibrated system prompts written
+Last activity: 2026-04-07 — Phase 7 Plan 02 executed
 
-Progress: [██░░░░░░░░░░░░░░░░░░] 10% (v1.1: 1/3 plans in Phase 7)
+Progress: [████░░░░░░░░░░░░░░░░] 20% (v1.1: 2/3 plans in Phase 7)
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [██░░░░░░░░░░░░░░░░░░] 10% (v1
 
 *Updated after each plan completion*
 | Phase 07-no-amnen P01 | 1min | 2 tasks | 2 files |
+| Phase 07-no-amnen P02 | 2min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,7 @@ Recent decisions affecting current work:
 - v1.0: NP verb hierarchy in prompts (E/C/A) — aligns with real nationella prov scoring (Phase 6 established pattern)
 - v1.0: Seed file pattern in backend/db/seeds/ — existing subject data files are the template
 - v1.1: NO subjects (Kemi + Fysik) grouped in Phase 7, SO subjects (Geografi + Historia) in Phase 8 — matches Swedish school discipline grouping
+- [Phase 07-no-amnen]: E-nivå prompts reference Delprov A1 faktafrågor, C and A-nivå reference Delprov A2 resonerande — matches real Skolverket NP structure
 
 ### Pending Todos
 
@@ -75,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-04-07
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
