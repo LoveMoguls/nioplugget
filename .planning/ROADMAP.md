@@ -53,7 +53,12 @@ Plans:
   2. Elev kan navigera till Historia i ämnesväljaren och se 4 ämnesområden (Industrialismens tid, De två världskrigen, Kalla kriget, 1900-talets politiska rörelser)
   3. Elev kan starta och genomföra ett övningspass inom valfritt Geografi- eller Historia-ämnesområde — AI:n svarar med NP-kalibrerade frågor på rätt nivå (E/C/A)
   4. Varje ämnesområde erbjuder 3 övningspass (totalt 24 pass för Geografi + Historia)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Migration scaffold: subjects, topics, exercise stubs for Geografi + Historia
+- [ ] 08-02-PLAN.md — NP-calibrated system prompts for all 12 Geografi exercises
+- [ ] 08-03-PLAN.md — NP-calibrated system prompts for all 12 Historia exercises, migration run
 
 ## Progress
 
@@ -65,8 +70,8 @@ Plans:
 | 4. Progress Views | v1.0 | 3/3 | Complete | 2026-04-06 |
 | 5. Polish + UI | v1.0 | 3/3 | Complete | 2026-04-03 |
 | 6. NP-Based Exercise Prompts | v1.0 | 1/1 | Complete | 2026-04-03 |
-| 7. NO-ämnen | 3/3 | Complete   | 2026-04-07 | - |
-| 8. SO-ämnen | v1.1 | 0/? | Not started | - |
+| 7. NO-ämnen | v1.1 | 3/3 | Complete | 2026-04-07 |
+| 8. SO-ämnen | v1.1 | 0/3 | Not started | - |
 
 ---
 *v1.0 MVP shipped 2026-04-06 — 6 phases, 20 plans, ~10,400 LOC*
