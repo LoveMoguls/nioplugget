@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 interface ApiError {
 	status: number;
@@ -13,6 +13,18 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<unknow
 			'Content-Type': 'application/json',
 			...options.headers,
 		},
+	});
+	const data = await res.json().catch(() => null);
+	if (!res.ok) throw { status: res.status, data } as ApiError;
+	return data;
+}
+
+async function apiUpload(path: string, formData: FormData): Promise<unknown> {
+	const res = await fetch(`${API_BASE}${path}`, {
+		method: 'POST',
+		credentials: 'include',
+		body: formData,
+		// Do NOT set Content-Type — browser sets multipart boundary automatically
 	});
 	const data = await res.json().catch(() => null);
 	if (!res.ok) throw { status: res.status, data } as ApiError;
@@ -62,6 +74,8 @@ export const children = {
 		apiFetch('/api/children', { method: 'POST', body: JSON.stringify({ name }) }),
 	generateInvite: (id: string) =>
 		apiFetch(`/api/children/${id}/invite`, { method: 'POST' }),
+	loginAs: (id: string) =>
+		apiFetch(`/api/children/${id}/login-as`, { method: 'POST' }),
 };
 
 // Invite
@@ -83,8 +97,11 @@ export const content = {
 
 // Sessions
 export const sessions = {
-	create: (exerciseId: string) =>
-		apiFetch('/api/sessions', { method: 'POST', body: JSON.stringify({ exerciseId }) }),
+	create: (exerciseId: string, challengeExerciseId?: string) =>
+		apiFetch('/api/sessions', {
+			method: 'POST',
+			body: JSON.stringify(challengeExerciseId ? { challengeExerciseId } : { exerciseId }),
+		}),
 	get: (sessionId: string) => apiFetch(`/api/sessions/${sessionId}`),
 	end: (sessionId: string) =>
 		apiFetch(`/api/sessions/${sessionId}/end`, { method: 'POST' }),
@@ -102,6 +119,18 @@ export const progress = {
 	child: (studentId: string) => apiFetch(`/api/children/${studentId}/progress`),
 	childSessions: (studentId: string) =>
 		apiFetch(`/api/children/${studentId}/progress/sessions`),
+};
+
+// Challenges
+export const challenges = {
+	list: () => apiFetch('/api/challenges'),
+	get: (id: string) => apiFetch(`/api/challenges/${id}`),
+	create: (images: File[]) => {
+		const form = new FormData();
+		images.forEach((img) => form.append('images', img));
+		return apiUpload('/api/challenges', form);
+	},
+	delete: (id: string) => apiFetch(`/api/challenges/${id}`, { method: 'DELETE' }),
 };
 
 // Child auth
