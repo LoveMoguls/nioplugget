@@ -15,6 +15,7 @@ import (
 
 	"github.com/trollstaven/nioplugget/backend/internal/apikey"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
+	"github.com/trollstaven/nioplugget/backend/internal/challenges"
 	"github.com/trollstaven/nioplugget/backend/internal/chat"
 	"github.com/trollstaven/nioplugget/backend/internal/child"
 	"github.com/trollstaven/nioplugget/backend/internal/content"
@@ -87,6 +88,10 @@ func main() {
 	progressStore := progress.NewQueriesStore(q)
 	progressHandler := progress.NewProgressHandler(progressStore)
 
+	// Initialize challenges handler
+	challengeStore := challenges.NewQueriesStore(q)
+	challengeHandler := challenges.NewChallengeHandler(challengeStore, encSvc)
+
 	// Build router
 	r := chi.NewRouter()
 
@@ -138,6 +143,7 @@ func main() {
 		r.Post("/", childHandler.Create)
 		r.Get("/", childHandler.List)
 		r.Post("/{id}/invite", childHandler.GenerateInvite)
+		r.Post("/{id}/login-as", childHandler.LoginAs)
 	})
 
 	// Public child routes
@@ -189,6 +195,22 @@ func main() {
 		r.Use(auth.ParentOnly)
 		r.Get("/", progressHandler.GetChildProgress)
 		r.Get("/sessions", progressHandler.ListChildSessions)
+	})
+
+	// Challenge routes (parent + child — role handled inside handler)
+	r.Route("/api/challenges", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(tokenAuth))
+		r.Use(jwtauth.Authenticator(tokenAuth))
+		r.Get("/", challengeHandler.List)
+		r.Post("/", challengeHandler.Create)
+		r.Get("/{id}", challengeHandler.Get)
+		r.Delete("/{id}", func(w http.ResponseWriter, req *http.Request) {
+			if auth.GetRoleFromContext(req.Context()) != "parent" {
+				http.Error(w, `{"error":"Forbidden"}`, http.StatusForbidden)
+				return
+			}
+			challengeHandler.Delete(w, req)
+		})
 	})
 
 	// Session/chat routes (child only)
