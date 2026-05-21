@@ -11,8 +11,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createChallengeSession = `-- name: CreateChallengeSession :one
+INSERT INTO sessions (student_id, challenge_exercise_id)
+VALUES ($1, $2)
+RETURNING id, student_id, exercise_id, challenge_exercise_id, score, summary, started_at, ended_at
+`
+
+type CreateChallengeSessionParams struct {
+	StudentID           pgtype.UUID `json:"student_id"`
+	ChallengeExerciseID pgtype.UUID `json:"challenge_exercise_id"`
+}
+
+type CreateChallengeSessionRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	StudentID           pgtype.UUID        `json:"student_id"`
+	ExerciseID          pgtype.UUID        `json:"exercise_id"`
+	ChallengeExerciseID pgtype.UUID        `json:"challenge_exercise_id"`
+	Score               pgtype.Int4        `json:"score"`
+	Summary             pgtype.Text        `json:"summary"`
+	StartedAt           pgtype.Timestamptz `json:"started_at"`
+	EndedAt             pgtype.Timestamptz `json:"ended_at"`
+}
+
+func (q *Queries) CreateChallengeSession(ctx context.Context, arg CreateChallengeSessionParams) (CreateChallengeSessionRow, error) {
+	row := q.db.QueryRow(ctx, createChallengeSession, arg.StudentID, arg.ChallengeExerciseID)
+	var i CreateChallengeSessionRow
+	err := row.Scan(
+		&i.ID,
+		&i.StudentID,
+		&i.ExerciseID,
+		&i.ChallengeExerciseID,
+		&i.Score,
+		&i.Summary,
+		&i.StartedAt,
+		&i.EndedAt,
+	)
+	return i, err
+}
+
 const createSession = `-- name: CreateSession :one
-INSERT INTO sessions (student_id, exercise_id) VALUES ($1, $2) RETURNING id, student_id, exercise_id, score, summary, started_at, ended_at
+
+INSERT INTO sessions (student_id, exercise_id)
+VALUES ($1, $2)
+RETURNING id, student_id, exercise_id, challenge_exercise_id, score, summary, started_at, ended_at
 `
 
 type CreateSessionParams struct {
@@ -20,13 +61,26 @@ type CreateSessionParams struct {
 	ExerciseID pgtype.UUID `json:"exercise_id"`
 }
 
-func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
+type CreateSessionRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	StudentID           pgtype.UUID        `json:"student_id"`
+	ExerciseID          pgtype.UUID        `json:"exercise_id"`
+	ChallengeExerciseID pgtype.UUID        `json:"challenge_exercise_id"`
+	Score               pgtype.Int4        `json:"score"`
+	Summary             pgtype.Text        `json:"summary"`
+	StartedAt           pgtype.Timestamptz `json:"started_at"`
+	EndedAt             pgtype.Timestamptz `json:"ended_at"`
+}
+
+// backend/db/queries/sessions.sql
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (CreateSessionRow, error) {
 	row := q.db.QueryRow(ctx, createSession, arg.StudentID, arg.ExerciseID)
-	var i Session
+	var i CreateSessionRow
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
 		&i.ExerciseID,
+		&i.ChallengeExerciseID,
 		&i.Score,
 		&i.Summary,
 		&i.StartedAt,
@@ -36,7 +90,10 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 }
 
 const endSession = `-- name: EndSession :one
-UPDATE sessions SET ended_at = NOW(), score = $2, summary = $3 WHERE id = $1 AND ended_at IS NULL RETURNING id, student_id, exercise_id, score, summary, started_at, ended_at
+UPDATE sessions
+SET ended_at = NOW(), score = $2, summary = $3
+WHERE id = $1 AND ended_at IS NULL
+RETURNING id, student_id, exercise_id, challenge_exercise_id, score, summary, started_at, ended_at
 `
 
 type EndSessionParams struct {
@@ -45,13 +102,25 @@ type EndSessionParams struct {
 	Summary pgtype.Text `json:"summary"`
 }
 
-func (q *Queries) EndSession(ctx context.Context, arg EndSessionParams) (Session, error) {
+type EndSessionRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	StudentID           pgtype.UUID        `json:"student_id"`
+	ExerciseID          pgtype.UUID        `json:"exercise_id"`
+	ChallengeExerciseID pgtype.UUID        `json:"challenge_exercise_id"`
+	Score               pgtype.Int4        `json:"score"`
+	Summary             pgtype.Text        `json:"summary"`
+	StartedAt           pgtype.Timestamptz `json:"started_at"`
+	EndedAt             pgtype.Timestamptz `json:"ended_at"`
+}
+
+func (q *Queries) EndSession(ctx context.Context, arg EndSessionParams) (EndSessionRow, error) {
 	row := q.db.QueryRow(ctx, endSession, arg.ID, arg.Score, arg.Summary)
-	var i Session
+	var i EndSessionRow
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
 		&i.ExerciseID,
+		&i.ChallengeExerciseID,
 		&i.Score,
 		&i.Summary,
 		&i.StartedAt,
@@ -61,16 +130,30 @@ func (q *Queries) EndSession(ctx context.Context, arg EndSessionParams) (Session
 }
 
 const getSessionByID = `-- name: GetSessionByID :one
-SELECT id, student_id, exercise_id, score, summary, started_at, ended_at FROM sessions WHERE id = $1
+SELECT id, student_id, exercise_id, challenge_exercise_id, score, summary, started_at, ended_at
+FROM sessions
+WHERE id = $1
 `
 
-func (q *Queries) GetSessionByID(ctx context.Context, id pgtype.UUID) (Session, error) {
+type GetSessionByIDRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	StudentID           pgtype.UUID        `json:"student_id"`
+	ExerciseID          pgtype.UUID        `json:"exercise_id"`
+	ChallengeExerciseID pgtype.UUID        `json:"challenge_exercise_id"`
+	Score               pgtype.Int4        `json:"score"`
+	Summary             pgtype.Text        `json:"summary"`
+	StartedAt           pgtype.Timestamptz `json:"started_at"`
+	EndedAt             pgtype.Timestamptz `json:"ended_at"`
+}
+
+func (q *Queries) GetSessionByID(ctx context.Context, id pgtype.UUID) (GetSessionByIDRow, error) {
 	row := q.db.QueryRow(ctx, getSessionByID, id)
-	var i Session
+	var i GetSessionByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
 		&i.ExerciseID,
+		&i.ChallengeExerciseID,
 		&i.Score,
 		&i.Summary,
 		&i.StartedAt,
@@ -80,22 +163,37 @@ func (q *Queries) GetSessionByID(ctx context.Context, id pgtype.UUID) (Session, 
 }
 
 const listSessionsByStudentID = `-- name: ListSessionsByStudentID :many
-SELECT id, student_id, exercise_id, score, summary, started_at, ended_at FROM sessions WHERE student_id = $1 ORDER BY started_at DESC
+SELECT id, student_id, exercise_id, challenge_exercise_id, score, summary, started_at, ended_at
+FROM sessions
+WHERE student_id = $1
+ORDER BY started_at DESC
 `
 
-func (q *Queries) ListSessionsByStudentID(ctx context.Context, studentID pgtype.UUID) ([]Session, error) {
+type ListSessionsByStudentIDRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	StudentID           pgtype.UUID        `json:"student_id"`
+	ExerciseID          pgtype.UUID        `json:"exercise_id"`
+	ChallengeExerciseID pgtype.UUID        `json:"challenge_exercise_id"`
+	Score               pgtype.Int4        `json:"score"`
+	Summary             pgtype.Text        `json:"summary"`
+	StartedAt           pgtype.Timestamptz `json:"started_at"`
+	EndedAt             pgtype.Timestamptz `json:"ended_at"`
+}
+
+func (q *Queries) ListSessionsByStudentID(ctx context.Context, studentID pgtype.UUID) ([]ListSessionsByStudentIDRow, error) {
 	rows, err := q.db.Query(ctx, listSessionsByStudentID, studentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Session
+	var items []ListSessionsByStudentIDRow
 	for rows.Next() {
-		var i Session
+		var i ListSessionsByStudentIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.StudentID,
 			&i.ExerciseID,
+			&i.ChallengeExerciseID,
 			&i.Score,
 			&i.Summary,
 			&i.StartedAt,

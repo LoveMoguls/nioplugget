@@ -16,6 +16,26 @@ type ApiKey struct {
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
+type Challenge struct {
+	ID            pgtype.UUID        `json:"id"`
+	ParentID      pgtype.UUID        `json:"parent_id"`
+	CreatedByRole string             `json:"created_by_role"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverEmoji    string             `json:"cover_emoji"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type ChallengeExercise struct {
+	ID           pgtype.UUID        `json:"id"`
+	ChallengeID  pgtype.UUID        `json:"challenge_id"`
+	Title        string             `json:"title"`
+	Description  string             `json:"description"`
+	SystemPrompt string             `json:"system_prompt"`
+	DisplayOrder int32              `json:"display_order"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
 type Exercise struct {
 	ID              pgtype.UUID        `json:"id"`
 	TopicID         pgtype.UUID        `json:"topic_id"`
@@ -62,13 +82,14 @@ type ReviewSchedule struct {
 }
 
 type Session struct {
-	ID         pgtype.UUID        `json:"id"`
-	StudentID  pgtype.UUID        `json:"student_id"`
-	ExerciseID pgtype.UUID        `json:"exercise_id"`
-	Score      pgtype.Int4        `json:"score"`
-	Summary    pgtype.Text        `json:"summary"`
-	StartedAt  pgtype.Timestamptz `json:"started_at"`
-	EndedAt    pgtype.Timestamptz `json:"ended_at"`
+	ID                  pgtype.UUID        `json:"id"`
+	StudentID           pgtype.UUID        `json:"student_id"`
+	ExerciseID          pgtype.UUID        `json:"exercise_id"`
+	Score               pgtype.Int4        `json:"score"`
+	Summary             pgtype.Text        `json:"summary"`
+	StartedAt           pgtype.Timestamptz `json:"started_at"`
+	EndedAt             pgtype.Timestamptz `json:"ended_at"`
+	ChallengeExerciseID pgtype.UUID        `json:"challenge_exercise_id"`
 }
 
 type Student struct {
