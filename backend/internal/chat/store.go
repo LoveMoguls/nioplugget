@@ -9,12 +9,14 @@ import (
 
 // ChatStore abstracts database access for chat operations.
 type ChatStore interface {
-	CreateSession(ctx context.Context, arg queries.CreateSessionParams) (queries.Session, error)
-	GetSessionByID(ctx context.Context, id pgtype.UUID) (queries.Session, error)
-	EndSession(ctx context.Context, arg queries.EndSessionParams) (queries.Session, error)
+	CreateSession(ctx context.Context, arg queries.CreateSessionParams) (queries.CreateSessionRow, error)
+	CreateChallengeSession(ctx context.Context, arg queries.CreateChallengeSessionParams) (queries.CreateChallengeSessionRow, error)
+	GetSessionByID(ctx context.Context, id pgtype.UUID) (queries.GetSessionByIDRow, error)
+	EndSession(ctx context.Context, arg queries.EndSessionParams) (queries.EndSessionRow, error)
 	CreateMessage(ctx context.Context, arg queries.CreateMessageParams) (queries.Message, error)
 	ListMessagesBySessionID(ctx context.Context, sessionID pgtype.UUID) ([]queries.Message, error)
 	GetExerciseByID(ctx context.Context, id pgtype.UUID) (queries.GetExerciseByIDRow, error)
+	GetChallengeExerciseByID(ctx context.Context, id pgtype.UUID) (queries.ChallengeExercise, error)
 	GetStudentByID(ctx context.Context, id pgtype.UUID) (queries.Student, error)
 	GetAPIKeyByParentID(ctx context.Context, parentID pgtype.UUID) (queries.ApiKey, error)
 	UpsertReviewSchedule(ctx context.Context, arg queries.UpsertReviewScheduleParams) (queries.ReviewSchedule, error)
@@ -31,15 +33,19 @@ func NewQueriesStore(q *queries.Queries) *QueriesStore {
 	return &QueriesStore{q: q}
 }
 
-func (s *QueriesStore) CreateSession(ctx context.Context, arg queries.CreateSessionParams) (queries.Session, error) {
+func (s *QueriesStore) CreateSession(ctx context.Context, arg queries.CreateSessionParams) (queries.CreateSessionRow, error) {
 	return s.q.CreateSession(ctx, arg)
 }
 
-func (s *QueriesStore) GetSessionByID(ctx context.Context, id pgtype.UUID) (queries.Session, error) {
+func (s *QueriesStore) CreateChallengeSession(ctx context.Context, arg queries.CreateChallengeSessionParams) (queries.CreateChallengeSessionRow, error) {
+	return s.q.CreateChallengeSession(ctx, arg)
+}
+
+func (s *QueriesStore) GetSessionByID(ctx context.Context, id pgtype.UUID) (queries.GetSessionByIDRow, error) {
 	return s.q.GetSessionByID(ctx, id)
 }
 
-func (s *QueriesStore) EndSession(ctx context.Context, arg queries.EndSessionParams) (queries.Session, error) {
+func (s *QueriesStore) EndSession(ctx context.Context, arg queries.EndSessionParams) (queries.EndSessionRow, error) {
 	return s.q.EndSession(ctx, arg)
 }
 
@@ -53,6 +59,10 @@ func (s *QueriesStore) ListMessagesBySessionID(ctx context.Context, sessionID pg
 
 func (s *QueriesStore) GetExerciseByID(ctx context.Context, id pgtype.UUID) (queries.GetExerciseByIDRow, error) {
 	return s.q.GetExerciseByID(ctx, id)
+}
+
+func (s *QueriesStore) GetChallengeExerciseByID(ctx context.Context, id pgtype.UUID) (queries.ChallengeExercise, error) {
+	return s.q.GetChallengeExerciseByID(ctx, id)
 }
 
 func (s *QueriesStore) GetStudentByID(ctx context.Context, id pgtype.UUID) (queries.Student, error) {

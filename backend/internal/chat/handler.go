@@ -27,13 +27,15 @@ func NewChatHandler(store ChatStore, encSvc *apikey.EncryptionService) *ChatHand
 }
 
 type createSessionRequest struct {
-	ExerciseID string `json:"exerciseId"`
+	ExerciseID          string `json:"exerciseId"`
+	ChallengeExerciseID string `json:"challengeExerciseId"`
 }
 
 type createSessionResponse struct {
-	ID         string `json:"id"`
-	ExerciseID string `json:"exerciseId"`
-	StartedAt  string `json:"startedAt"`
+	ID                  string `json:"id"`
+	ExerciseID          string `json:"exerciseId,omitempty"`
+	ChallengeExerciseID string `json:"challengeExerciseId,omitempty"`
+	StartedAt           string `json:"startedAt"`
 }
 
 type sendMessageRequest struct {
@@ -70,23 +72,39 @@ func (h *ChatHandler) CreateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	studentUUID := parseUUID(studentID)
-	exerciseUUID := parseUUID(req.ExerciseID)
 
-	session, err := h.store.CreateSession(r.Context(), queries.CreateSessionParams{
-		StudentID:  studentUUID,
-		ExerciseID: exerciseUUID,
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("failed to create session")
-		http.Error(w, `{"error":"Kunde inte starta session"}`, http.StatusInternalServerError)
-		return
+	resp := createSessionResponse{}
+	if req.ChallengeExerciseID != "" {
+		chalExUUID := parseUUID(req.ChallengeExerciseID)
+		session, err := h.store.CreateChallengeSession(r.Context(), queries.CreateChallengeSessionParams{
+			StudentID:           studentUUID,
+			ChallengeExerciseID: chalExUUID,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("failed to create challenge session")
+			http.Error(w, `{"error":"Kunde inte starta session"}`, http.StatusInternalServerError)
+			return
+		}
+		resp.ID = uuidToString(session.ID)
+		resp.ChallengeExerciseID = uuidToString(session.ChallengeExerciseID)
+		resp.StartedAt = session.StartedAt.Time.Format("2006-01-02T15:04:05Z")
+	} else {
+		exerciseUUID := parseUUID(req.ExerciseID)
+		session, err := h.store.CreateSession(r.Context(), queries.CreateSessionParams{
+			StudentID:  studentUUID,
+			ExerciseID: exerciseUUID,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("failed to create session")
+			http.Error(w, `{"error":"Kunde inte starta session"}`, http.StatusInternalServerError)
+			return
+		}
+		resp.ID = uuidToString(session.ID)
+		resp.ExerciseID = uuidToString(session.ExerciseID)
+		resp.StartedAt = session.StartedAt.Time.Format("2006-01-02T15:04:05Z")
 	}
 
-	writeJSON(w, http.StatusCreated, createSessionResponse{
-		ID:         uuidToString(session.ID),
-		ExerciseID: uuidToString(session.ExerciseID),
-		StartedAt:  session.StartedAt.Time.Format("2006-01-02T15:04:05Z"),
-	})
+	writeJSON(w, http.StatusCreated, resp)
 }
 
 // SendMessage handles POST /api/sessions/{id}/messages
@@ -135,12 +153,24 @@ func (h *ChatHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get exercise for system prompt
-	exercise, err := h.store.GetExerciseByID(r.Context(), session.ExerciseID)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to get exercise")
-		http.Error(w, `{"error":"Övning hittades inte"}`, http.StatusInternalServerError)
-		return
+	// Get system prompt based on session type
+	var systemPrompt string
+	if session.ExerciseID.Valid {
+		exercise, err := h.store.GetExerciseByID(r.Context(), session.ExerciseID)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get exercise")
+			http.Error(w, `{"error":"Övning hittades inte"}`, http.StatusInternalServerError)
+			return
+		}
+		systemPrompt = exercise.SystemPrompt
+	} else {
+		chalEx, err := h.store.GetChallengeExerciseByID(r.Context(), session.ChallengeExerciseID)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get challenge exercise")
+			http.Error(w, `{"error":"Övning hittades inte"}`, http.StatusInternalServerError)
+			return
+		}
+		systemPrompt = chalEx.SystemPrompt
 	}
 
 	// Get API key
@@ -163,7 +193,7 @@ func (h *ChatHandler) SendMessage(w http.ResponseWriter, r *http.Request) {
 	messageHistory := BuildMessageHistory(allMessages, DefaultWindowSize)
 
 	// Stream response
-	fullResponse, err := StreamChatResponse(w, r.Context(), decryptedKey, exercise.SystemPrompt, messageHistory)
+	fullResponse, err := StreamChatResponse(w, r.Context(), decryptedKey, systemPrompt, messageHistory)
 	if err != nil {
 		log.Error().Err(err).Msg("stream error (response may be partial)")
 	}
@@ -247,9 +277,14 @@ func (h *ChatHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]interface{}{
-		"id":         uuidToString(session.ID),
-		"exerciseId": uuidToString(session.ExerciseID),
-		"startedAt":  session.StartedAt.Time.Format("2006-01-02T15:04:05Z"),
+		"id":        uuidToString(session.ID),
+		"startedAt": session.StartedAt.Time.Format("2006-01-02T15:04:05Z"),
+	}
+	if session.ExerciseID.Valid {
+		resp["exerciseId"] = uuidToString(session.ExerciseID)
+	}
+	if session.ChallengeExerciseID.Valid {
+		resp["challengeExerciseId"] = uuidToString(session.ChallengeExerciseID)
 	}
 
 	if session.EndedAt.Valid {
@@ -301,11 +336,23 @@ func (h *ChatHandler) EndSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	exercise, err := h.store.GetExerciseByID(r.Context(), session.ExerciseID)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to get exercise for scoring")
-		http.Error(w, `{"error":"Övning hittades inte"}`, http.StatusInternalServerError)
-		return
+	var exerciseTitle string
+	if session.ExerciseID.Valid {
+		exercise, err := h.store.GetExerciseByID(r.Context(), session.ExerciseID)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get exercise for scoring")
+			http.Error(w, `{"error":"Övning hittades inte"}`, http.StatusInternalServerError)
+			return
+		}
+		exerciseTitle = exercise.Title
+	} else {
+		chalEx, err := h.store.GetChallengeExerciseByID(r.Context(), session.ChallengeExerciseID)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get challenge exercise for scoring")
+			http.Error(w, `{"error":"Övning hittades inte"}`, http.StatusInternalServerError)
+			return
+		}
+		exerciseTitle = chalEx.Title
 	}
 
 	// Get API key for scoring
@@ -316,7 +363,7 @@ func (h *ChatHandler) EndSession(w http.ResponseWriter, r *http.Request) {
 		log.Warn().Err(err).Msg("API key not available for scoring, using default")
 		scoreResult = defaultScore()
 	} else {
-		scoreResult, err = ScoreSession(r.Context(), decryptedKey, exercise, allMessages)
+		scoreResult, err = ScoreSession(r.Context(), decryptedKey, exerciseTitle, allMessages)
 		if err != nil {
 			log.Error().Err(err).Msg("scoring failed, using default")
 			scoreResult = defaultScore()
@@ -345,44 +392,46 @@ func (h *ChatHandler) EndSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update spaced repetition schedule via SM-2 (non-blocking — failure does not affect response)
-	srsCtx := r.Context()
-	srsStudentUUID := parseUUID(studentID)
-	srsExerciseID := session.ExerciseID
-	srsScore := scoreResult.Score
-	go func() {
-		// Get existing schedule (if any) for current EF and interval
-		sm2Input := srs.SM2Input{
-			Score:           srsScore,
-			EaseFactor:      2.5, // SM-2 default
-			IntervalDays:    1,
-			RepetitionCount: 0,
-		}
+	// Update spaced repetition schedule via SM-2 — only for regular exercises, not challenges
+	if session.ExerciseID.Valid {
+		srsCtx := r.Context()
+		srsStudentUUID := parseUUID(studentID)
+		srsExerciseID := session.ExerciseID
+		srsScore := scoreResult.Score
+		go func() {
+			// Get existing schedule (if any) for current EF and interval
+			sm2Input := srs.SM2Input{
+				Score:           srsScore,
+				EaseFactor:      2.5, // SM-2 default
+				IntervalDays:    1,
+				RepetitionCount: 0,
+			}
 
-		existing, err := h.store.GetReviewSchedule(srsCtx, queries.GetReviewScheduleParams{
-			StudentID:  srsStudentUUID,
-			ExerciseID: srsExerciseID,
-		})
-		if err == nil {
-			sm2Input.EaseFactor = float64(existing.EaseFactor)
-			sm2Input.IntervalDays = int(existing.IntervalDays)
-			sm2Input.RepetitionCount = int(existing.RepetitionCount)
-		}
+			existing, err := h.store.GetReviewSchedule(srsCtx, queries.GetReviewScheduleParams{
+				StudentID:  srsStudentUUID,
+				ExerciseID: srsExerciseID,
+			})
+			if err == nil {
+				sm2Input.EaseFactor = float64(existing.EaseFactor)
+				sm2Input.IntervalDays = int(existing.IntervalDays)
+				sm2Input.RepetitionCount = int(existing.RepetitionCount)
+			}
 
-		output := srs.Calculate(sm2Input, time.Now())
+			output := srs.Calculate(sm2Input, time.Now())
 
-		_, err = h.store.UpsertReviewSchedule(srsCtx, queries.UpsertReviewScheduleParams{
-			StudentID:       srsStudentUUID,
-			ExerciseID:      srsExerciseID,
-			EaseFactor:      float32(output.EaseFactor),
-			IntervalDays:    int32(output.IntervalDays),
-			RepetitionCount: int32(output.RepetitionCount),
-			NextReview:      pgtype.Timestamptz{Time: output.NextReview, Valid: true},
-		})
-		if err != nil {
-			log.Error().Err(err).Msg("failed to update review schedule")
-		}
-	}()
+			_, err = h.store.UpsertReviewSchedule(srsCtx, queries.UpsertReviewScheduleParams{
+				StudentID:       srsStudentUUID,
+				ExerciseID:      srsExerciseID,
+				EaseFactor:      float32(output.EaseFactor),
+				IntervalDays:    int32(output.IntervalDays),
+				RepetitionCount: int32(output.RepetitionCount),
+				NextReview:      pgtype.Timestamptz{Time: output.NextReview, Valid: true},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("failed to update review schedule")
+			}
+		}()
+	}
 
 	writeJSON(w, http.StatusOK, endSessionResponse{
 		Score:    scoreResult.Score,

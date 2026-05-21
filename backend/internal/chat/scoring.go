@@ -20,7 +20,7 @@ type ScoreResult struct {
 }
 
 // ScoreSession evaluates student performance using a separate Claude call.
-func ScoreSession(ctx context.Context, apiKey string, exercise queries.GetExerciseByIDRow, messages []queries.Message) (*ScoreResult, error) {
+func ScoreSession(ctx context.Context, apiKey string, exerciseTitle string, messages []queries.Message) (*ScoreResult, error) {
 	scoringPrompt := fmt.Sprintf(`Du är en bedömare av elevers prestation i en pedagogisk dialog.
 
 ÖVNING: %s
@@ -35,7 +35,7 @@ BEDÖMNINGSKRITERIER:
 5 = Eleven visade djup förståelse och kunde koppla ihop begrepp
 
 Svara med EXAKT detta JSON-format, inget annat:
-{"score": <1-5>, "summary": "<2-3 meningar om vad eleven lärde sig>", "feedback": "<1 mening uppmuntrande men ärlig feedback>"}`, exercise.Title)
+{"score": <1-5>, "summary": "<2-3 meningar om vad eleven lärde sig>", "feedback": "<1 mening uppmuntrande men ärlig feedback>"}`, exerciseTitle)
 
 	// Build conversation context for scoring
 	var convoBuilder strings.Builder
