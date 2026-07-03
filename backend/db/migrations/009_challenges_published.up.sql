@@ -1,0 +1,1 @@
+ALTER TABLE challenges ADD COLUMN published BOOLEAN NOT NULL DEFAULT false;

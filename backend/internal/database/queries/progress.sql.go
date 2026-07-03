@@ -116,13 +116,14 @@ func (q *Queries) GetStudentProgressByTopic(ctx context.Context, arg GetStudentP
 
 const listCompletedSessions = `-- name: ListCompletedSessions :many
 SELECT se.id, se.score, se.started_at, se.ended_at,
-  e.title AS exercise_title,
-  t.name AS topic_name,
-  s.name AS subject_name
+  COALESCE(e.title, ce.title, '')::text AS exercise_title,
+  COALESCE(t.name, 'Utmaning')::text AS topic_name,
+  COALESCE(s.name, 'Utmaningar')::text AS subject_name
 FROM sessions se
-JOIN exercises e ON e.id = se.exercise_id
-JOIN topics t ON t.id = e.topic_id
-JOIN subjects s ON s.id = t.subject_id
+LEFT JOIN exercises e ON e.id = se.exercise_id
+LEFT JOIN topics t ON t.id = e.topic_id
+LEFT JOIN subjects s ON s.id = t.subject_id
+LEFT JOIN challenge_exercises ce ON ce.id = se.challenge_exercise_id
 WHERE se.student_id = $1 AND se.ended_at IS NOT NULL AND se.score IS NOT NULL
 ORDER BY se.ended_at DESC
 `

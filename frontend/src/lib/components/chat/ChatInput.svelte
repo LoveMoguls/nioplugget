@@ -6,6 +6,13 @@
 
 	let { onSend, disabled = false }: Props = $props();
 	let message = $state('');
+	let textarea: HTMLTextAreaElement;
+
+	$effect(() => {
+		if (!disabled) {
+			textarea?.focus();
+		}
+	});
 
 	function handleSubmit() {
 		const trimmed = message.trim();
@@ -25,12 +32,13 @@
 
 <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="flex gap-2">
 	<textarea
+		bind:this={textarea}
 		bind:value={message}
 		onkeydown={handleKeydown}
 		{disabled}
 		placeholder="Skriv ditt svar..."
 		rows={1}
-		class="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm
+		class="flex-1 resize-none rounded-xl border border-input bg-white px-4 py-3 text-sm
 			focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring
 			disabled:cursor-not-allowed disabled:opacity-50"
 	></textarea>

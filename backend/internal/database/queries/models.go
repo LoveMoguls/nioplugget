@@ -24,6 +24,7 @@ type Challenge struct {
 	Description   string             `json:"description"`
 	CoverEmoji    string             `json:"cover_emoji"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	Published     bool               `json:"published"`
 }
 
 type ChallengeExercise struct {

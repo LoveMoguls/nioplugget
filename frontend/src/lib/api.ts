@@ -97,10 +97,15 @@ export const content = {
 
 // Sessions
 export const sessions = {
-	create: (exerciseId: string, challengeExerciseId?: string) =>
+	create: (exerciseId: string) =>
 		apiFetch('/api/sessions', {
 			method: 'POST',
-			body: JSON.stringify(challengeExerciseId ? { challengeExerciseId } : { exerciseId }),
+			body: JSON.stringify({ exerciseId }),
+		}),
+	createChallenge: (challengeExerciseId: string) =>
+		apiFetch('/api/sessions', {
+			method: 'POST',
+			body: JSON.stringify({ challengeExerciseId }),
 		}),
 	get: (sessionId: string) => apiFetch(`/api/sessions/${sessionId}`),
 	end: (sessionId: string) =>
@@ -130,6 +135,11 @@ export const challenges = {
 		images.forEach((img) => form.append('images', img));
 		return apiUpload('/api/challenges', form);
 	},
+	publish: (id: string, title: string) =>
+		apiFetch(`/api/challenges/${id}/publish`, {
+			method: 'PATCH',
+			body: JSON.stringify({ title }),
+		}),
 	delete: (id: string) => apiFetch(`/api/challenges/${id}`, { method: 'DELETE' }),
 };
 

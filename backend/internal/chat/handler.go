@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -76,6 +77,28 @@ func (h *ChatHandler) CreateSession(w http.ResponseWriter, r *http.Request) {
 	resp := createSessionResponse{}
 	if req.ChallengeExerciseID != "" {
 		chalExUUID := parseUUID(req.ChallengeExerciseID)
+
+		// The exercise must belong to a published challenge in the student's own family
+		chalEx, err := h.store.GetChallengeExerciseByID(r.Context(), chalExUUID)
+		if err != nil {
+			http.Error(w, `{"error":"Övningen hittades inte"}`, http.StatusNotFound)
+			return
+		}
+		challenge, err := h.store.GetChallengeByID(r.Context(), chalEx.ChallengeID)
+		if err != nil {
+			http.Error(w, `{"error":"Övningen hittades inte"}`, http.StatusNotFound)
+			return
+		}
+		student, err := h.store.GetStudentByID(r.Context(), studentUUID)
+		if err != nil {
+			http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
+			return
+		}
+		if challenge.ParentID != student.ParentID || !challenge.Published {
+			http.Error(w, `{"error":"Övningen hittades inte"}`, http.StatusNotFound)
+			return
+		}
+
 		session, err := h.store.CreateChallengeSession(r.Context(), queries.CreateChallengeSessionParams{
 			StudentID:           studentUUID,
 			ChallengeExerciseID: chalExUUID,
@@ -394,7 +417,8 @@ func (h *ChatHandler) EndSession(w http.ResponseWriter, r *http.Request) {
 
 	// Update spaced repetition schedule via SM-2 — only for regular exercises, not challenges
 	if session.ExerciseID.Valid {
-		srsCtx := r.Context()
+		// The goroutine outlives this handler; the request context would be canceled under it
+		srsCtx := context.WithoutCancel(r.Context())
 		srsStudentUUID := parseUUID(studentID)
 		srsExerciseID := session.ExerciseID
 		srsScore := scoreResult.Score

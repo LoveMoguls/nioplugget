@@ -14,6 +14,8 @@ type ChallengeStore interface {
 	CreateChallenge(ctx context.Context, arg queries.CreateChallengeParams) (queries.Challenge, error)
 	CreateChallengeExercise(ctx context.Context, arg queries.CreateChallengeExerciseParams) (queries.ChallengeExercise, error)
 	ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error)
+	ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error)
+	PublishChallenge(ctx context.Context, arg queries.PublishChallengeParams) (queries.Challenge, error)
 	GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error)
 	ListChallengeExercisesByChallengeID(ctx context.Context, challengeID pgtype.UUID) ([]queries.ChallengeExercise, error)
 	ListChallengeExercisesWithProgress(ctx context.Context, arg queries.ListChallengeExercisesWithProgressParams) ([]queries.ListChallengeExercisesWithProgressRow, error)
@@ -41,6 +43,14 @@ func (s *QueriesStore) CreateChallengeExercise(ctx context.Context, arg queries.
 
 func (s *QueriesStore) ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error) {
 	return s.q.ListChallengesByParentID(ctx, parentID)
+}
+
+func (s *QueriesStore) ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error) {
+	return s.q.ListPublishedChallengesByParentID(ctx, parentID)
+}
+
+func (s *QueriesStore) PublishChallenge(ctx context.Context, arg queries.PublishChallengeParams) (queries.Challenge, error) {
+	return s.q.PublishChallenge(ctx, arg)
 }
 
 func (s *QueriesStore) GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error) {

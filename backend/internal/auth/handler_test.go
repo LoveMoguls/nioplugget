@@ -102,8 +102,8 @@ func TestHandler_Register_ValidInput_Returns201(t *testing.T) {
 	}
 	// Should set cookie
 	cookieHeader := rr.Header().Get("Set-Cookie")
-	if !strings.Contains(cookieHeader, "token=") {
-		t.Error("expected token cookie to be set")
+	if !strings.Contains(cookieHeader, "jwt=") {
+		t.Error("expected jwt cookie to be set")
 	}
 	if !strings.Contains(cookieHeader, "HttpOnly") {
 		t.Error("expected HttpOnly cookie attribute")
@@ -178,8 +178,8 @@ func TestHandler_Login_ValidCredentials_Returns200(t *testing.T) {
 		t.Errorf("expected 200, got %d: %s", rr.Code, rr.Body.String())
 	}
 	cookieHeader := rr.Header().Get("Set-Cookie")
-	if !strings.Contains(cookieHeader, "token=") {
-		t.Error("expected token cookie to be set")
+	if !strings.Contains(cookieHeader, "jwt=") {
+		t.Error("expected jwt cookie to be set")
 	}
 }
 
@@ -232,8 +232,8 @@ func TestHandler_Logout_Returns200(t *testing.T) {
 	}
 	// Cookie should be cleared (MaxAge=-1)
 	cookieHeader := rr.Header().Get("Set-Cookie")
-	if !strings.Contains(cookieHeader, "token=") {
-		t.Error("expected token cookie to be cleared")
+	if !strings.Contains(cookieHeader, "jwt=") {
+		t.Error("expected jwt cookie to be cleared")
 	}
 	if !strings.Contains(cookieHeader, "Max-Age=0") {
 		t.Errorf("expected Max-Age=0 in cookie, got: %s", cookieHeader)

@@ -204,6 +204,13 @@ func main() {
 		r.Get("/", challengeHandler.List)
 		r.Post("/", challengeHandler.Create)
 		r.Get("/{id}", challengeHandler.Get)
+		r.Patch("/{id}/publish", func(w http.ResponseWriter, req *http.Request) {
+			if auth.GetRoleFromContext(req.Context()) != "parent" {
+				http.Error(w, `{"error":"Forbidden"}`, http.StatusForbidden)
+				return
+			}
+			challengeHandler.Publish(w, req)
+		})
 		r.Delete("/{id}", func(w http.ResponseWriter, req *http.Request) {
 			if auth.GetRoleFromContext(req.Context()) != "parent" {
 				http.Error(w, `{"error":"Forbidden"}`, http.StatusForbidden)

@@ -1,9 +1,5 @@
 import { writable } from 'svelte/store';
 
-const API_BASE = typeof window !== 'undefined'
-	? (import.meta.env.VITE_API_URL || 'http://localhost:8080')
-	: 'http://localhost:8080';
-
 export interface ChatMessage {
 	id?: string;
 	role: 'user' | 'assistant';
@@ -24,7 +20,7 @@ export async function sendMessage(sessionId: string, content: string): Promise<v
 	messages.update((msgs) => [...msgs, { role: 'assistant', content: '' }]);
 
 	try {
-		const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/messages`, {
+		const res = await fetch(`/api/sessions/${sessionId}/messages`, {
 			method: 'POST',
 			credentials: 'include',
 			headers: { 'Content-Type': 'application/json' },
@@ -94,7 +90,7 @@ export async function sendMessage(sessionId: string, content: string): Promise<v
 
 export async function loadMessages(sessionId: string): Promise<void> {
 	try {
-		const res = await fetch(`${API_BASE}/api/sessions/${sessionId}/messages`, {
+		const res = await fetch(`/api/sessions/${sessionId}/messages`, {
 			credentials: 'include',
 		});
 		if (res.ok) {

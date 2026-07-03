@@ -33,6 +33,7 @@ type ChildQuerier interface {
 	ActivateStudent(ctx context.Context, arg queries.ActivateStudentParams) (queries.Student, error)
 	GetStudentByNameAndParent(ctx context.Context, arg queries.GetStudentByNameAndParentParams) (queries.Student, error)
 	GetParentByEmail(ctx context.Context, email string) (queries.Parent, error)
+	GetParentByID(ctx context.Context, id pgtype.UUID) (queries.Parent, error)
 	ListStudentNamesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListStudentNamesByParentIDRow, error)
 	UpdateStudentInvite(ctx context.Context, arg UpdateStudentInviteParams) (queries.Student, error)
 	GetStudentByID(ctx context.Context, id pgtype.UUID) (queries.Student, error)
@@ -297,11 +298,19 @@ func (h *ChildHandler) Activate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAuthCookie(w, tokenStr, expiry)
+	// Look up parent email so the frontend can cache it for device setup
+	parent, err := h.queries.GetParentByID(r.Context(), student.ParentID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internt fel"})
+		return
+	}
+
+	auth.SetAuthCookie(w, tokenStr, expiry)
 	writeJSON(w, http.StatusOK, map[string]any{
-		"id":      uuidToString(student.ID),
-		"name":    student.Name,
-		"message": "Kontot är aktiverat!",
+		"id":          uuidToString(student.ID),
+		"name":        student.Name,
+		"parentEmail": parent.Email,
+		"message":     "Kontot är aktiverat!",
 	})
 }
 
@@ -375,7 +384,7 @@ func (h *ChildHandler) PINLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAuthCookie(w, tokenStr, expiry)
+	auth.SetAuthCookie(w, tokenStr, expiry)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":   studentIDStr,
 		"name": student.Name,
@@ -415,16 +424,56 @@ func (h *ChildHandler) ListNames(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, items)
 }
 
-// setAuthCookie sets an httpOnly JWT cookie.
-func setAuthCookie(w http.ResponseWriter, tokenStr string, expiry time.Time) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    tokenStr,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
-		MaxAge:   86400,
-		Expires:  expiry,
+// LoginAs handles POST /api/children/{id}/login-as (parent-authenticated).
+// Switches the session to the named child so the parent can hand over the device.
+func (h *ChildHandler) LoginAs(w http.ResponseWriter, r *http.Request) {
+	parentID := auth.GetUserIDFromContext(r.Context())
+	parentUUID, err := parseUUIDParam(parentID)
+	if err != nil {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Ogiltig session"})
+		return
+	}
+
+	childIDStr := chi.URLParam(r, "id")
+	childUUID, err := parseUUIDParam(childIDStr)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Ogiltigt barn-ID"})
+		return
+	}
+
+	student, err := h.queries.GetStudentByID(r.Context(), childUUID)
+	if err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "Barnet hittades inte"})
+		return
+	}
+
+	// Ensure this child belongs to the requesting parent
+	if student.ParentID != parentUUID {
+		writeJSON(w, http.StatusForbidden, map[string]string{"error": "Åtkomst nekad"})
+		return
+	}
+
+	if !student.ActivatedAt.Valid {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Barnets konto är inte aktiverat ännu"})
+		return
+	}
+
+	parent, err := h.queries.GetParentByID(r.Context(), parentUUID)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internt fel"})
+		return
+	}
+
+	tokenStr, expiry, err := auth.GenerateToken(childIDStr, "child")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internt fel"})
+		return
+	}
+
+	auth.SetAuthCookie(w, tokenStr, expiry)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"id":          childIDStr,
+		"name":        student.Name,
+		"parentEmail": parent.Email,
 	})
 }

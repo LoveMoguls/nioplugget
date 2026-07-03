@@ -8,7 +8,7 @@
     "Segoe UI Symbol", "Noto Color Emoji";
 
   /* Calm blue/green palette — studious, trustworthy feel */
-  --color-background: oklch(0.985 0.003 210);
+  --color-background: oklch(0.93 0.008 220);
   --color-foreground: oklch(0.20 0.02 235);
   --color-card: oklch(0.995 0.001 210);
   --color-card-foreground: oklch(0.20 0.02 235);

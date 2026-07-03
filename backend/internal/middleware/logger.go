@@ -49,6 +49,12 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	return n, err
 }
 
+func (rw *responseWriter) Flush() {
+	if f, ok := rw.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
 // RedactingLogger is a Chi-compatible middleware that logs requests while
 // never outputting sensitive header values or query parameters.
 func RedactingLogger(next http.Handler) http.Handler {

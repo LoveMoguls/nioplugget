@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '$lib/components/ui/card';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { apiKey as apiKeyApi, children as childrenApi, getErrorMessage } from '$lib/api';
+	import { apiKey as apiKeyApi, children as childrenApi, challenges as challengesApi, getErrorMessage } from '$lib/api';
 	import { user, isLoggedIn, isParent } from '$lib/stores/auth';
 	import { browser } from '$app/environment';
 
@@ -21,6 +21,33 @@
 	let apiKeyError = $state('');
 	let apiKeySuccess = $state('');
 	let showUpdateForm = $state(false);
+
+	// Challenges state
+	interface ChallengeItem {
+		id: string;
+		title: string;
+		description: string;
+		coverEmoji: string;
+		createdAt: string;
+	}
+	interface ChallengeDraft {
+		id: string;
+		title: string;
+		description: string;
+		coverEmoji: string;
+	}
+	let challengeList = $state<ChallengeItem[]>([]);
+	let challengeFiles = $state<File[]>([]);
+	let challengePreviews = $state<string[]>([]);
+	let challengeLoading = $state(false);
+	let challengeError = $state('');
+	let challengeSuccess = $state('');
+	let challengeStep = $state('');
+	let challengeElapsed = $state(0);
+	let elapsedInterval = $state<ReturnType<typeof setInterval> | null>(null);
+	let draft = $state<ChallengeDraft | null>(null);
+	let draftTitle = $state('');
+	let publishLoading = $state(false);
 
 	// Children state
 	interface Child {
@@ -46,7 +73,84 @@
 	});
 
 	async function loadData() {
-		await Promise.all([loadApiKey(), loadChildren()]);
+		await Promise.all([loadApiKey(), loadChildren(), loadChallenges()]);
+	}
+
+	async function loadChallenges() {
+		try {
+			const data = (await challengesApi.list()) as ChallengeItem[] | null;
+			challengeList = data || [];
+		} catch {
+			challengeList = [];
+		}
+	}
+
+	async function handleCreateChallenge(e: Event) {
+		e.preventDefault();
+		challengeError = '';
+		challengeSuccess = '';
+		if (challengeFiles.length === 0) {
+			challengeError = 'Välj minst en bild.';
+			return;
+		}
+		challengeLoading = true;
+		challengeElapsed = 0;
+		challengeStep = 'Skickar bilder...';
+		elapsedInterval = setInterval(() => {
+			challengeElapsed += 1;
+			if (challengeElapsed === 3) challengeStep = 'Claude läser bilderna...';
+			else if (challengeElapsed === 10) challengeStep = 'Analyserar innehållet...';
+			else if (challengeElapsed === 25) challengeStep = 'Skapar övningar...';
+			else if (challengeElapsed === 45) challengeStep = 'Nästan klart...';
+		}, 1000);
+		try {
+			const created = (await challengesApi.create(challengeFiles)) as ChallengeItem;
+			draft = { id: created.id, title: created.title, description: created.description, coverEmoji: created.coverEmoji };
+			draftTitle = created.title;
+			challengeFiles = [];
+			challengePreviews.forEach(URL.revokeObjectURL);
+			challengePreviews = [];
+			const input = document.getElementById('challenge-files') as HTMLInputElement;
+			if (input) input.value = '';
+		} catch (err) {
+			challengeError = getErrorMessage(err, 'Kunde inte skapa utmaningen. Försök med tydligare foton.');
+		} finally {
+			challengeLoading = false;
+			challengeStep = '';
+			if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+		}
+	}
+
+	async function handlePublish() {
+		if (!draft) return;
+		publishLoading = true;
+		challengeError = '';
+		try {
+			const published = (await challengesApi.publish(draft.id, draftTitle.trim() || draft.title)) as ChallengeItem;
+			challengeList = [published, ...challengeList];
+			challengeSuccess = `✓ Publicerad: ${published.title}`;
+			draft = null;
+		} catch (err) {
+			challengeError = getErrorMessage(err, 'Kunde inte publicera utmaningen.');
+		} finally {
+			publishLoading = false;
+		}
+	}
+
+	async function handleDiscardDraft() {
+		if (!draft) return;
+		try { await challengesApi.delete(draft.id); } catch { /* ignore */ }
+		draft = null;
+	}
+
+	async function handleDeleteChallenge(id: string) {
+		if (!confirm('Ta bort utmaningen?')) return;
+		try {
+			await challengesApi.delete(id);
+			challengeList = challengeList.filter((c) => c.id !== id);
+		} catch {
+			challengeError = 'Kunde inte ta bort utmaningen.';
+		}
 	}
 
 	async function loadApiKey() {
@@ -417,6 +521,141 @@
 					{childLoading ? 'Lägger till...' : 'Lägg till barn'}
 				</Button>
 			</form>
+		</CardContent>
+	</Card>
+
+	<!-- Challenges section -->
+	<Card class="mt-6">
+		<CardHeader>
+			<CardTitle>Utmaningar</CardTitle>
+			<CardDescription>
+				Fotografera prov, läxor eller övningsuppgifter så skapar AI:n en interaktiv utmaning.
+			</CardDescription>
+		</CardHeader>
+		<CardContent>
+			{#if challengeError}
+				<Alert variant="destructive" class="mb-4">
+					<AlertDescription>{challengeError}</AlertDescription>
+				</Alert>
+			{/if}
+			{#if challengeSuccess}
+				<Alert class="mb-4">
+					<AlertDescription>{challengeSuccess}</AlertDescription>
+				</Alert>
+			{/if}
+
+			<!-- Existing challenges -->
+			{#if challengeList.length > 0}
+				<div class="mb-4 flex flex-col gap-2">
+					{#each challengeList as challenge}
+						<div class="flex items-center justify-between rounded-lg border border-border p-3">
+							<div class="min-w-0 flex-1">
+								<p class="font-medium">{challenge.coverEmoji} {challenge.title}</p>
+								<p class="text-xs text-muted-foreground">{challenge.description}</p>
+							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								class="ml-3 text-destructive hover:text-destructive"
+								onclick={() => handleDeleteChallenge(challenge.id)}
+							>
+								Ta bort
+							</Button>
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<p class="mb-4 text-sm text-muted-foreground">Inga utmaningar än.</p>
+			{/if}
+
+			<!-- Draft review step -->
+			{#if draft}
+				<div class="mb-4 rounded-lg border-2 border-primary/30 bg-primary/5 p-4">
+					<p class="mb-3 text-sm font-medium">Granska och namnge utmaningen</p>
+					<div class="mb-2 flex items-center gap-2 text-2xl">{draft.coverEmoji}</div>
+					<div class="mb-3 flex flex-col gap-1.5">
+						<Label for="draft-title">Namn på utmaningen</Label>
+						<Input id="draft-title" bind:value={draftTitle} placeholder={draft.title} />
+						<p class="text-xs text-muted-foreground">{draft.description}</p>
+					</div>
+					<div class="flex gap-2">
+						<Button onclick={handlePublish} disabled={publishLoading}>
+							{publishLoading ? 'Publicerar...' : 'Publicera läxa'}
+						</Button>
+						<Button variant="outline" onclick={handleDiscardDraft} disabled={publishLoading}>
+							Kasta bort
+						</Button>
+					</div>
+				</div>
+			{/if}
+
+			<!-- Upload form -->
+			{#if !draft}
+			<form onsubmit={handleCreateChallenge} class="flex flex-col gap-3">
+				<div class="flex flex-col gap-1.5">
+					<Label for="challenge-files">Bilder (1–6 st, max 5 MB/bild)</Label>
+					<input
+						id="challenge-files"
+						type="file"
+						accept="image/*"
+						multiple
+						disabled={challengeLoading}
+						class="block w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:opacity-50"
+						onchange={(e) => {
+							const input = e.currentTarget as HTMLInputElement;
+							challengeFiles = input.files ? Array.from(input.files).slice(0, 6) : [];
+							challengePreviews.forEach(URL.revokeObjectURL);
+							challengePreviews = challengeFiles.map((f) => URL.createObjectURL(f));
+						}}
+					/>
+					{#if challengePreviews.length > 0 && !challengeLoading}
+						<div class="flex flex-wrap gap-2 pt-1">
+							{#each challengePreviews as src, i}
+								<div class="relative">
+									<img
+										{src}
+										alt="Bild {i + 1}"
+										class="h-24 w-24 rounded-md border border-border object-cover"
+									/>
+									<button
+										type="button"
+										onclick={() => {
+											URL.revokeObjectURL(challengePreviews[i]);
+											challengeFiles = challengeFiles.filter((_, j) => j !== i);
+											challengePreviews = challengePreviews.filter((_, j) => j !== i);
+										}}
+										class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground"
+									>✕</button>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
+				{#if challengeLoading}
+					<div class="rounded-lg border border-border bg-muted/30 p-4">
+						<div class="mb-3 flex items-center gap-3">
+							<svg class="h-5 w-5 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+							</svg>
+							<span class="text-sm font-medium">{challengeStep}</span>
+						</div>
+						<div class="mb-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+							<div
+								class="h-full rounded-full bg-primary transition-all duration-1000"
+								style="width: {Math.min(95, challengeElapsed * 1.8)}%"
+							></div>
+						</div>
+						<p class="text-right text-xs text-muted-foreground">{challengeElapsed}s</p>
+					</div>
+				{:else}
+					<Button type="submit" disabled={challengeFiles.length === 0}>
+						Skapa utmaning
+					</Button>
+				{/if}
+			</form>
+			{/if}
 		</CardContent>
 	</Card>
 </div>

@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -57,7 +58,7 @@ func GenerateChallenge(ctx context.Context, apiKey string, imageDataList [][]byt
 
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaudeSonnet4_6,
-		MaxTokens: 2048,
+		MaxTokens: 4096,
 		System: []anthropic.TextBlockParam{
 			{Text: generationSystemPrompt},
 		},
@@ -75,6 +76,13 @@ func GenerateChallenge(ctx context.Context, apiKey string, imageDataList [][]byt
 			responseText = tb.Text
 		}
 	}
+
+	// The model is told to answer with bare JSON, but tolerate ```json fences
+	responseText = strings.TrimSpace(responseText)
+	responseText = strings.TrimPrefix(responseText, "```json")
+	responseText = strings.TrimPrefix(responseText, "```")
+	responseText = strings.TrimSuffix(responseText, "```")
+	responseText = strings.TrimSpace(responseText)
 
 	var result GeneratedChallenge
 	if err := json.Unmarshal([]byte(responseText), &result); err != nil {

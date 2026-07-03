@@ -17,6 +17,7 @@ type ChatStore interface {
 	ListMessagesBySessionID(ctx context.Context, sessionID pgtype.UUID) ([]queries.Message, error)
 	GetExerciseByID(ctx context.Context, id pgtype.UUID) (queries.GetExerciseByIDRow, error)
 	GetChallengeExerciseByID(ctx context.Context, id pgtype.UUID) (queries.ChallengeExercise, error)
+	GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error)
 	GetStudentByID(ctx context.Context, id pgtype.UUID) (queries.Student, error)
 	GetAPIKeyByParentID(ctx context.Context, parentID pgtype.UUID) (queries.ApiKey, error)
 	UpsertReviewSchedule(ctx context.Context, arg queries.UpsertReviewScheduleParams) (queries.ReviewSchedule, error)
@@ -63,6 +64,10 @@ func (s *QueriesStore) GetExerciseByID(ctx context.Context, id pgtype.UUID) (que
 
 func (s *QueriesStore) GetChallengeExerciseByID(ctx context.Context, id pgtype.UUID) (queries.ChallengeExercise, error) {
 	return s.q.GetChallengeExerciseByID(ctx, id)
+}
+
+func (s *QueriesStore) GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error) {
+	return s.q.GetChallengeByID(ctx, id)
 }
 
 func (s *QueriesStore) GetStudentByID(ctx context.Context, id pgtype.UUID) (queries.Student, error) {

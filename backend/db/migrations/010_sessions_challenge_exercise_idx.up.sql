@@ -1,0 +1,1 @@
+CREATE INDEX idx_sessions_challenge_exercise_id ON sessions(challenge_exercise_id);

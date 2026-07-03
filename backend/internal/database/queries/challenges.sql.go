@@ -15,7 +15,7 @@ const createChallenge = `-- name: CreateChallenge :one
 
 INSERT INTO challenges (parent_id, created_by_role, title, description, cover_emoji)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at
+RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
 `
 
 type CreateChallengeParams struct {
@@ -44,6 +44,7 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 		&i.Description,
 		&i.CoverEmoji,
 		&i.CreatedAt,
+		&i.Published,
 	)
 	return i, err
 }
@@ -98,7 +99,7 @@ func (q *Queries) DeleteChallenge(ctx context.Context, arg DeleteChallengeParams
 }
 
 const getChallengeByID = `-- name: GetChallengeByID :one
-SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at
+SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
 FROM challenges
 WHERE id = $1
 `
@@ -114,6 +115,7 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id pgtype.UUID) (Challen
 		&i.Description,
 		&i.CoverEmoji,
 		&i.CreatedAt,
+		&i.Published,
 	)
 	return i, err
 }
@@ -175,7 +177,7 @@ func (q *Queries) ListChallengeExercisesByChallengeID(ctx context.Context, chall
 }
 
 const listChallengeExercisesWithProgress = `-- name: ListChallengeExercisesWithProgress :many
-SELECT
+SELECT DISTINCT ON (ce.display_order, ce.id)
     ce.id,
     ce.title,
     ce.description,
@@ -187,7 +189,7 @@ LEFT JOIN sessions s ON s.challenge_exercise_id = ce.id
     AND s.student_id = $2
     AND s.ended_at IS NOT NULL
 WHERE ce.challenge_id = $1
-ORDER BY ce.display_order, s.score DESC NULLS LAST
+ORDER BY ce.display_order, ce.id, s.score DESC NULLS LAST
 `
 
 type ListChallengeExercisesWithProgressParams struct {
@@ -232,7 +234,7 @@ func (q *Queries) ListChallengeExercisesWithProgress(ctx context.Context, arg Li
 }
 
 const listChallengesByParentID = `-- name: ListChallengesByParentID :many
-SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at
+SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
 FROM challenges
 WHERE parent_id = $1
 ORDER BY created_at DESC
@@ -255,6 +257,7 @@ func (q *Queries) ListChallengesByParentID(ctx context.Context, parentID pgtype.
 			&i.Description,
 			&i.CoverEmoji,
 			&i.CreatedAt,
+			&i.Published,
 		); err != nil {
 			return nil, err
 		}
@@ -264,4 +267,69 @@ func (q *Queries) ListChallengesByParentID(ctx context.Context, parentID pgtype.
 		return nil, err
 	}
 	return items, nil
+}
+
+const listPublishedChallengesByParentID = `-- name: ListPublishedChallengesByParentID :many
+SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
+FROM challenges
+WHERE parent_id = $1 AND published = true
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]Challenge, error) {
+	rows, err := q.db.Query(ctx, listPublishedChallengesByParentID, parentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Challenge
+	for rows.Next() {
+		var i Challenge
+		if err := rows.Scan(
+			&i.ID,
+			&i.ParentID,
+			&i.CreatedByRole,
+			&i.Title,
+			&i.Description,
+			&i.CoverEmoji,
+			&i.CreatedAt,
+			&i.Published,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const publishChallenge = `-- name: PublishChallenge :one
+UPDATE challenges
+SET title = $1, published = true
+WHERE id = $2 AND parent_id = $3
+RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
+`
+
+type PublishChallengeParams struct {
+	Title    string      `json:"title"`
+	ID       pgtype.UUID `json:"id"`
+	ParentID pgtype.UUID `json:"parent_id"`
+}
+
+func (q *Queries) PublishChallenge(ctx context.Context, arg PublishChallengeParams) (Challenge, error) {
+	row := q.db.QueryRow(ctx, publishChallenge, arg.Title, arg.ID, arg.ParentID)
+	var i Challenge
+	err := row.Scan(
+		&i.ID,
+		&i.ParentID,
+		&i.CreatedByRole,
+		&i.Title,
+		&i.Description,
+		&i.CoverEmoji,
+		&i.CreatedAt,
+		&i.Published,
+	)
+	return i, err
 }

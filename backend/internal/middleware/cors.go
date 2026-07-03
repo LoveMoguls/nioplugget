@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-chi/cors"
 )
@@ -15,9 +16,16 @@ func CORS() func(http.Handler) http.Handler {
 		frontendURL = "http://localhost:5173"
 	}
 
+	origins := []string{frontendURL}
+	if extra := os.Getenv("EXTRA_ORIGINS"); extra != "" {
+		for _, o := range strings.Split(extra, ",") {
+			origins = append(origins, strings.TrimSpace(o))
+		}
+	}
+
 	return cors.Handler(cors.Options{
-		AllowedOrigins:   []string{frontendURL},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedOrigins:   origins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
 		MaxAge:           300,

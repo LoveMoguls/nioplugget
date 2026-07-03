@@ -25,6 +25,7 @@ type mockQuerier struct {
 	activateStudentFn         func(ctx context.Context, arg queries.ActivateStudentParams) (queries.Student, error)
 	getStudentByNameAndParentFn func(ctx context.Context, arg queries.GetStudentByNameAndParentParams) (queries.Student, error)
 	getParentByEmailFn        func(ctx context.Context, email string) (queries.Parent, error)
+	getParentByIDFn           func(ctx context.Context, id pgtype.UUID) (queries.Parent, error)
 	listStudentNamesByParentIDFn func(ctx context.Context, parentID pgtype.UUID) ([]queries.ListStudentNamesByParentIDRow, error)
 	updateStudentInviteFn     func(ctx context.Context, arg UpdateStudentInviteParams) (queries.Student, error)
 	getStudentByIDFn          func(ctx context.Context, id pgtype.UUID) (queries.Student, error)
@@ -44,6 +45,12 @@ func (m *mockQuerier) GetStudentByNameAndParent(ctx context.Context, arg queries
 }
 func (m *mockQuerier) GetParentByEmail(ctx context.Context, email string) (queries.Parent, error) {
 	return m.getParentByEmailFn(ctx, email)
+}
+func (m *mockQuerier) GetParentByID(ctx context.Context, id pgtype.UUID) (queries.Parent, error) {
+	if m.getParentByIDFn != nil {
+		return m.getParentByIDFn(ctx, id)
+	}
+	return queries.Parent{}, nil
 }
 func (m *mockQuerier) ListStudentNamesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListStudentNamesByParentIDRow, error) {
 	return m.listStudentNamesByParentIDFn(ctx, parentID)
@@ -262,12 +269,12 @@ func TestHandlerActivateSuccess(t *testing.T) {
 	cookies := w.Result().Cookies()
 	found := false
 	for _, c := range cookies {
-		if c.Name == "token" {
+		if c.Name == "jwt" {
 			found = true
 		}
 	}
 	if !found {
-		t.Error("expected token cookie to be set")
+		t.Error("expected jwt cookie to be set")
 	}
 }
 
@@ -356,12 +363,12 @@ func TestHandlerPINLoginSuccess(t *testing.T) {
 	cookies := w.Result().Cookies()
 	found := false
 	for _, c := range cookies {
-		if c.Name == "token" {
+		if c.Name == "jwt" {
 			found = true
 		}
 	}
 	if !found {
-		t.Error("expected token cookie to be set on successful login")
+		t.Error("expected jwt cookie to be set on successful login")
 	}
 }
 

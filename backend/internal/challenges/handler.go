@@ -3,11 +3,13 @@ package challenges
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
 	"github.com/trollstaven/nioplugget/backend/internal/apikey"
@@ -115,7 +117,15 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			log.Error().Err(err).Msg("failed to save challenge exercise")
-			continue
+			// Don't leave a half-saved challenge behind — remove it and fail the request
+			if delErr := h.store.DeleteChallenge(r.Context(), queries.DeleteChallengeParams{
+				ID:       challenge.ID,
+				ParentID: parentID,
+			}); delErr != nil {
+				log.Error().Err(delErr).Msg("failed to clean up partial challenge")
+			}
+			http.Error(w, `{"error":"Kunde inte spara utmaningen"}`, http.StatusInternalServerError)
+			return
 		}
 		exerciseResponses = append(exerciseResponses, map[string]interface{}{
 			"id":           uuidToString(saved.ID),
@@ -146,24 +156,74 @@ func (h *ChallengeHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	challenges, err := h.store.ListChallengesByParentID(r.Context(), parentID)
+	var challengeList []queries.Challenge
+	if role == "parent" {
+		challengeList, err = h.store.ListChallengesByParentID(r.Context(), parentID)
+	} else {
+		challengeList, err = h.store.ListPublishedChallengesByParentID(r.Context(), parentID)
+	}
 	if err != nil {
 		log.Error().Err(err).Msg("failed to list challenges")
 		http.Error(w, `{"error":"Kunde inte hämta utmaningar"}`, http.StatusInternalServerError)
 		return
 	}
 
-	result := make([]map[string]interface{}, len(challenges))
-	for i, c := range challenges {
+	result := make([]map[string]interface{}, len(challengeList))
+	for i, c := range challengeList {
 		result[i] = map[string]interface{}{
 			"id":          uuidToString(c.ID),
 			"title":       c.Title,
 			"description": c.Description,
 			"coverEmoji":  c.CoverEmoji,
+			"published":   c.Published,
 			"createdAt":   c.CreatedAt.Time.Format("2006-01-02T15:04:05Z"),
 		}
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// PATCH /api/challenges/{id}/publish — parent only
+func (h *ChallengeHandler) Publish(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	userID := auth.GetUserIDFromContext(r.Context())
+
+	var parentID pgtype.UUID
+	if err := parentID.Scan(userID); err != nil {
+		http.Error(w, `{"error":"Ogiltigt användar-ID"}`, http.StatusBadRequest)
+		return
+	}
+
+	var body struct {
+		Title string `json:"title"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Title == "" {
+		http.Error(w, `{"error":"Titel krävs"}`, http.StatusBadRequest)
+		return
+	}
+
+	updated, err := h.store.PublishChallenge(r.Context(), queries.PublishChallengeParams{
+		Title:    body.Title,
+		ID:       parseUUID(id),
+		ParentID: parentID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, `{"error":"Utmaningen hittades inte"}`, http.StatusNotFound)
+			return
+		}
+		log.Error().Err(err).Msg("failed to publish challenge")
+		http.Error(w, `{"error":"Kunde inte publicera utmaningen"}`, http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"id":          uuidToString(updated.ID),
+		"title":       updated.Title,
+		"description": updated.Description,
+		"coverEmoji":  updated.CoverEmoji,
+		"published":   updated.Published,
+		"createdAt":   updated.CreatedAt.Time.Format("2006-01-02T15:04:05Z"),
+	})
 }
 
 // GET /api/challenges/{id}
@@ -175,6 +235,17 @@ func (h *ChallengeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	challengeUUID := parseUUID(id)
 	challenge, err := h.store.GetChallengeByID(r.Context(), challengeUUID)
 	if err != nil {
+		http.Error(w, `{"error":"Utmaningen hittades inte"}`, http.StatusNotFound)
+		return
+	}
+
+	// Only members of the owning family may see a challenge; children only published ones
+	callerParentID, _, err := resolveParentID(r.Context(), h.store, userID, role)
+	if err != nil {
+		http.Error(w, `{"error":"Kunde inte identifiera användaren"}`, http.StatusUnauthorized)
+		return
+	}
+	if challenge.ParentID != callerParentID || (role == "child" && !challenge.Published) {
 		http.Error(w, `{"error":"Utmaningen hittades inte"}`, http.StatusNotFound)
 		return
 	}

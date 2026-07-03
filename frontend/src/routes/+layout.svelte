@@ -41,18 +41,18 @@
 
 <div class="min-h-screen bg-background font-sans antialiased">
 	{#if $isLoggedIn}
-		<nav class="relative border-b border-border bg-card" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
+		<nav class="relative bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
 			<div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-				<a href="/" class="text-lg font-semibold text-foreground">Nioplugget</a>
+				<a href="/" class="text-lg font-semibold text-white tracking-wide">Nioplugget</a>
 
 				<!-- Desktop nav -->
 				<div class="hidden items-center gap-4 md:flex">
 					{#if $isParent}
-						<a href="/dashboard" class="min-h-[44px] flex items-center text-sm text-muted-foreground hover:text-foreground">
+						<a href="/dashboard" class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white">
 							Dashboard
 						</a>
 					{:else}
-						<a href="/study" class="min-h-[44px] flex items-center text-sm text-muted-foreground hover:text-foreground">
+						<a href="/study" class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white">
 							Plugga
 						</a>
 					{/if}
@@ -61,7 +61,7 @@
 							await user.logout();
 							goto('/');
 						}}
-						class="min-h-[44px] flex items-center text-sm text-muted-foreground hover:text-foreground"
+						class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white"
 					>
 						Logga ut
 					</button>
@@ -69,7 +69,7 @@
 
 				<!-- Mobile hamburger -->
 				<button
-					class="flex min-h-[44px] min-w-[44px] items-center justify-center text-foreground md:hidden"
+					class="flex min-h-[44px] min-w-[44px] items-center justify-center text-white md:hidden"
 					onclick={() => (menuOpen = !menuOpen)}
 					aria-expanded={menuOpen}
 					aria-label="Meny"
@@ -84,19 +84,19 @@
 
 			<!-- Mobile menu overlay -->
 			{#if menuOpen}
-				<div class="border-t border-border bg-card px-4 pb-4 md:hidden" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
+				<div class="border-t border-white/20 bg-indigo-700 px-4 pb-4 md:hidden" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
 					<div class="mx-auto flex max-w-4xl flex-col">
 						{#if $isParent}
 							<a
 								href="/dashboard"
-								class="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-foreground"
+								class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
 							>
 								Dashboard
 							</a>
 						{:else}
 							<a
 								href="/study"
-								class="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-foreground"
+								class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
 							>
 								Plugga
 							</a>
@@ -107,7 +107,7 @@
 								await user.logout();
 								goto('/');
 							}}
-							class="flex min-h-[44px] items-center text-sm text-muted-foreground hover:text-foreground"
+							class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
 						>
 							Logga ut
 						</button>

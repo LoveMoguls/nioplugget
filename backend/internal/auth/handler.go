@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -61,12 +62,20 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	json.NewEncoder(w).Encode(v) //nolint:errcheck
 }
 
-func setAuthCookie(w http.ResponseWriter, tokenStr string, expiry time.Time) {
+// isSecureCookie is the single source of truth for the auth cookie's Secure
+// flag: on unless explicitly disabled for local HTTP development.
+func isSecureCookie() bool {
+	return os.Getenv("COOKIE_SECURE") != "false" && os.Getenv("APP_ENV") != "development"
+}
+
+// SetAuthCookie sets the httpOnly JWT session cookie.
+// Cookie name must be "jwt" — that's what jwtauth.TokenFromCookie reads.
+func SetAuthCookie(w http.ResponseWriter, tokenStr string, expiry time.Time) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
+		Name:     "jwt",
 		Value:    tokenStr,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   isSecureCookie(),
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 		MaxAge:   86400,
@@ -74,12 +83,13 @@ func setAuthCookie(w http.ResponseWriter, tokenStr string, expiry time.Time) {
 	})
 }
 
-func clearAuthCookie(w http.ResponseWriter) {
+// ClearAuthCookie removes the JWT session cookie.
+func ClearAuthCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
+		Name:     "jwt",
 		Value:    "",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   isSecureCookie(),
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 		MaxAge:   -1,
@@ -143,7 +153,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAuthCookie(w, tokenStr, expiry)
+	SetAuthCookie(w, tokenStr, expiry)
 	writeJSON(w, http.StatusCreated, authResponse{
 		ID:    uuidToString(parent.ID),
 		Email: parent.Email,
@@ -180,7 +190,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setAuthCookie(w, tokenStr, expiry)
+	SetAuthCookie(w, tokenStr, expiry)
 	writeJSON(w, http.StatusOK, authResponse{
 		ID:    uuidToString(parent.ID),
 		Email: parent.Email,
@@ -189,7 +199,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 // Logout handles POST /api/auth/logout.
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	clearAuthCookie(w)
+	ClearAuthCookie(w)
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Utloggad"})
 }
 

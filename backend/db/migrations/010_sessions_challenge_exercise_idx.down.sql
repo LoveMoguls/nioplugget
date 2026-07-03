@@ -1,0 +1,1 @@
+DROP INDEX idx_sessions_challenge_exercise_id;

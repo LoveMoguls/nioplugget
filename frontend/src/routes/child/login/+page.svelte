@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -8,9 +9,10 @@
 	import { childAuth, getErrorMessage } from '$lib/api';
 	import { user } from '$lib/stores/auth';
 
-	// Login steps: 'email' | 'select' | 'pin'
-	type Step = 'email' | 'select' | 'pin';
-	let step = $state<Step>('email');
+	// Login steps: 'setup' | 'select' | 'pin'
+	// 'setup' is only shown if no parent email is saved on device
+	type Step = 'setup' | 'select' | 'pin';
+	let step = $state<Step>('select');
 
 	let parentEmail = $state('');
 	let selectedName = $state('');
@@ -19,28 +21,54 @@
 	let loading = $state(false);
 	let errorMsg = $state('');
 
-	async function handleEmailSubmit(e: Event) {
+	onMount(async () => {
+		const saved = localStorage.getItem('childParentEmail');
+		if (saved) {
+			parentEmail = saved;
+			await loadNames();
+		} else {
+			step = 'setup';
+		}
+	});
+
+	async function loadNames() {
+		loading = true;
+		errorMsg = '';
+		try {
+			const data = (await childAuth.names(parentEmail)) as
+				| string[]
+				| { name: string }[]
+				| { names: string[] };
+			let names: string[];
+			if (Array.isArray(data)) {
+				names = data.map((d) => (typeof d === 'string' ? d : d.name));
+			} else {
+				names = data.names || [];
+			}
+			if (names.length === 0) {
+				errorMsg = 'Inga barn hittades. Be din förälder skapa en inbjudningslänk.';
+				step = 'setup';
+				return;
+			}
+			childNames = names;
+			step = 'select';
+		} catch {
+			errorMsg = 'Kunde inte hämta konton. Be din förälder kontrollera inbjudningslänken.';
+			step = 'setup';
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function handleSetupSubmit(e: Event) {
 		e.preventDefault();
 		errorMsg = '';
 		if (!parentEmail || !parentEmail.includes('@')) {
 			errorMsg = 'Ange en giltig e-postadress.';
 			return;
 		}
-		loading = true;
-		try {
-			const data = (await childAuth.names(parentEmail)) as string[] | { names: string[] };
-			const names = Array.isArray(data) ? data : data.names || [];
-			if (names.length === 0) {
-				errorMsg = 'Inga barn hittades för den e-postadressen.';
-				return;
-			}
-			childNames = names;
-			step = 'select';
-		} catch (err) {
-			errorMsg = getErrorMessage(err, 'Kunde inte hämta barn. Kontrollera e-postadressen.');
-		} finally {
-			loading = false;
-		}
+		localStorage.setItem('childParentEmail', parentEmail);
+		await loadNames();
 	}
 
 	function selectName(name: string) {
@@ -86,14 +114,14 @@
 
 <div class="flex min-h-screen items-center justify-center bg-background px-4 py-12">
 	<div class="w-full max-w-sm">
-		{#if step === 'email'}
+		{#if step === 'setup'}
 			<Card>
 				<CardHeader>
-					<CardTitle class="text-center text-2xl">Logga in</CardTitle>
-					<CardDescription class="text-center">Ange din förälders e-postadress</CardDescription>
+					<CardTitle class="text-center text-2xl">Kom igång</CardTitle>
+					<CardDescription class="text-center">Be din förälder ange sin e-post för att ställa in den här enheten</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onsubmit={handleEmailSubmit} class="flex flex-col gap-4">
+					<form onsubmit={handleSetupSubmit} class="flex flex-col gap-4">
 						{#if errorMsg}
 							<Alert variant="destructive">
 								<AlertDescription>{errorMsg}</AlertDescription>
@@ -111,7 +139,7 @@
 							/>
 						</div>
 						<Button type="submit" class="w-full" disabled={loading}>
-							{loading ? 'Söker...' : 'Nästa'}
+							{loading ? 'Söker...' : 'Fortsätt'}
 						</Button>
 					</form>
 				</CardContent>
@@ -121,7 +149,6 @@
 			<Card>
 				<CardHeader>
 					<CardTitle class="text-center text-2xl">Vem är du?</CardTitle>
-					<CardDescription class="text-center">Välj ditt namn</CardDescription>
 				</CardHeader>
 				<CardContent>
 					{#if errorMsg}
@@ -129,27 +156,34 @@
 							<AlertDescription>{errorMsg}</AlertDescription>
 						</Alert>
 					{/if}
-					<div class="flex flex-col gap-2">
-						{#each childNames as name (name)}
-							<Button
-								variant="outline"
-								class="h-12 w-full text-base"
-								onclick={() => selectName(name)}
-							>
-								{name}
-							</Button>
-						{/each}
-					</div>
-					<Button
-						variant="ghost"
-						class="mt-4 w-full"
-						onclick={() => {
-							step = 'email';
-							errorMsg = '';
-						}}
-					>
-						Tillbaka
-					</Button>
+					{#if loading}
+						<p class="text-center text-muted-foreground">Laddar...</p>
+					{:else}
+						<div class="flex flex-col gap-2">
+							{#each childNames as name (name)}
+								<Button
+									variant="outline"
+									class="h-12 w-full text-base"
+									onclick={() => selectName(name)}
+								>
+									{name}
+								</Button>
+							{/each}
+						</div>
+						<Button
+							variant="ghost"
+							class="mt-4 w-full text-xs text-muted-foreground"
+							onclick={() => {
+								localStorage.removeItem('childParentEmail');
+								parentEmail = '';
+								childNames = [];
+								errorMsg = '';
+								step = 'setup';
+							}}
+						>
+							Fel familj? Byt e-postadress
+						</Button>
+					{/if}
 				</CardContent>
 			</Card>
 
@@ -157,7 +191,7 @@
 			<Card>
 				<CardHeader>
 					<CardTitle class="text-center text-2xl">Hej, {selectedName}!</CardTitle>
-					<CardDescription class="text-center">Ange din 4-siffriga PIN-kod</CardDescription>
+					<CardDescription class="text-center">Ange din PIN-kod</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<form onsubmit={handlePinSubmit} class="flex flex-col gap-4">
@@ -170,7 +204,6 @@
 							<Input
 								type="password"
 								inputmode="numeric"
-								pattern="[0-9]*"
 								maxlength={4}
 								bind:value={pin}
 								placeholder="••••"

@@ -35,7 +35,7 @@
 - [x] **HIST-02**: System har färdiga övningspass för Historia — De två världskrigen (orsaker, Förintelsen, efterdyningar)
 - [x] **HIST-03**: System har färdiga övningspass för Historia — Kalla kriget (bipolar värld, dekolonisation, kapprustning)
 - [x] **HIST-04**: System har färdiga övningspass för Historia — 1900-talets politiska rörelser (fascism, kommunism, demokratisering)
-- [ ] **HIST-05**: Alla Historia-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
+- [x] **HIST-05**: Alla Historia-övningar har NP-kalibrerade system-prompts med E/C/A verbhierarki
 
 ## Out of Scope
 
@@ -70,7 +70,7 @@
 | HIST-02 | Phase 8 | Complete |
 | HIST-03 | Phase 8 | Complete |
 | HIST-04 | Phase 8 | Complete |
-| HIST-05 | Phase 8 | Pending |
+| HIST-05 | Phase 8 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 20 total

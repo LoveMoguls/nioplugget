@@ -100,7 +100,8 @@ func (h *APIKeyHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	rawKey, err := h.encSvc.Decrypt(record.EncryptedKey)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Kunde inte läsa API-nyckel"})
+		// Key exists but can't be decrypted (e.g. encryption key rotated) — treat as missing
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "Ingen API-nyckel sparad"})
 		return
 	}
 

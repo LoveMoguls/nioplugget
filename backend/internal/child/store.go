@@ -49,6 +49,10 @@ func (s *QueriesStore) GetParentByEmail(ctx context.Context, email string) (quer
 	return s.q.GetParentByEmail(ctx, email)
 }
 
+func (s *QueriesStore) GetParentByID(ctx context.Context, id pgtype.UUID) (queries.Parent, error) {
+	return s.q.GetParentByID(ctx, id)
+}
+
 func (s *QueriesStore) ListStudentNamesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListStudentNamesByParentIDRow, error) {
 	return s.q.ListStudentNamesByParentID(ctx, parentID)
 }
