@@ -1,0 +1,14 @@
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Compiled binaries
+backend/server
+
+# Logs
+*.log
+
+# Editor / OS
+.vscode/
+.DS_Store
