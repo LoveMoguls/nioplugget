@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { sessions } from '$lib/api';
 	import ChatBubble from '$lib/components/chat/ChatBubble.svelte';
@@ -20,10 +21,17 @@
 	let showEndConfirm = $state(false);
 	let ending = $state(false);
 	let scoreResult: { score: number; summary: string; feedback: string } | null = $state(null);
+	let returnTo = $state('/study');
 
 	onMount(async () => {
 		resetChat();
 		sessionId = ($page.params as Record<string, string>).sessionId;
+
+		// Where to go back to (only internal paths, e.g. /challenges/[id])
+		const rt = $page.url.searchParams.get('returnTo');
+		if (rt && rt.startsWith('/') && !rt.startsWith('//')) {
+			returnTo = rt;
+		}
 
 		// Load existing messages
 		await loadMessages(sessionId);
@@ -79,11 +87,24 @@
 			scoreResult = result;
 			sessionEnded.set(true);
 			showEndConfirm = false;
+
+			// Challenge exercise: go back to the challenge page and show the star reward
+			if (returnTo.startsWith('/challenges/')) {
+				const stars = scoreToStars(result.score);
+				goto(`${returnTo}?stars=${stars}&xp=${stars * 10}`);
+			}
 		} catch {
 			showEndConfirm = false;
 		} finally {
 			ending = false;
 		}
+	}
+
+	// Must match scoreToStars in backend/internal/challenges/handler.go
+	function scoreToStars(score: number): number {
+		if (score >= 5) return 3;
+		if (score >= 3) return 2;
+		return 1;
 	}
 
 	function scoreStars(score: number): string {
@@ -98,7 +119,7 @@
 <div class="flex h-[calc(100vh-4rem)] flex-col">
 	<!-- Header -->
 	<div class="flex min-h-[44px] items-center justify-between border-b border-border px-4 py-3">
-		<a href="/study" class="min-h-[44px] flex items-center text-sm text-muted-foreground hover:underline">&larr; Övningar</a>
+		<a href={returnTo} class="min-h-[44px] flex items-center text-sm text-muted-foreground hover:underline">&larr; Tillbaka</a>
 		{#if !$sessionEnded}
 			<button
 				onclick={() => (showEndConfirm = true)}
@@ -158,10 +179,10 @@
 					<p class="mt-2 text-sm text-muted-foreground">{scoreResult.feedback}</p>
 				{/if}
 				<a
-					href="/study"
+					href={returnTo}
 					class="mt-4 inline-block min-h-[44px] rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground hover:bg-primary/90"
 				>
-					Tillbaka till övningar
+					Tillbaka
 				</a>
 			</div>
 		{/if}
