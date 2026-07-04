@@ -6,6 +6,9 @@ const telegramMessageLimit = 4096
 // splitMessage splits text into chunks of at most max runes, preferring to
 // break at a newline, then a space, in the last half of the chunk.
 func splitMessage(text string, max int) []string {
+	if max <= 0 {
+		return []string{text}
+	}
 	runes := []rune(text)
 	if len(runes) <= max {
 		return []string{text}

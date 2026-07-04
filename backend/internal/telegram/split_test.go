@@ -28,6 +28,15 @@ func TestSplitMessageLongBreaksAtNewline(t *testing.T) {
 	}
 }
 
+func TestSplitMessageNonPositiveMax(t *testing.T) {
+	for _, max := range []int{0, -1} {
+		parts := splitMessage("hej", max)
+		if len(parts) != 1 || parts[0] != "hej" {
+			t.Errorf("max=%d: got %v", max, parts)
+		}
+	}
+}
+
 func TestSplitMessageNoBreakpoint(t *testing.T) {
 	text := strings.Repeat("x", 130)
 	parts := splitMessage(text, 60)
