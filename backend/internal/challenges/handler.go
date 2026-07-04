@@ -67,10 +67,16 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 	userID := auth.GetUserIDFromContext(r.Context())
 	role := auth.GetRoleFromContext(r.Context())
 
-	parentID, createdByRole, err := resolveParentID(r.Context(), h.store, userID, role)
+	parentID, createdByRole, creator, err := resolveParentID(r.Context(), h.store, userID, role)
 	if err != nil {
 		http.Error(w, `{"error":"Kunde inte identifiera användaren"}`, http.StatusUnauthorized)
 		return
+	}
+	var creatorStudentID pgtype.UUID
+	creatorName := ""
+	if creator != nil {
+		creatorStudentID = creator.ID
+		creatorName = creator.Name
 	}
 
 	apiKeyRecord, err := h.store.GetAPIKeyByParentID(r.Context(), parentID)
@@ -139,11 +145,12 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	challenge, err := h.store.CreateChallenge(r.Context(), queries.CreateChallengeParams{
-		ParentID:      parentID,
-		CreatedByRole: createdByRole,
-		Title:         generated.Title,
-		Description:   generated.Description,
-		CoverEmoji:    generated.Emoji,
+		ParentID:           parentID,
+		CreatedByRole:      createdByRole,
+		Title:              generated.Title,
+		Description:        generated.Description,
+		CoverEmoji:         generated.Emoji,
+		CreatedByStudentID: creatorStudentID,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to save challenge")
@@ -201,9 +208,18 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 		"description": challenge.Description,
 		"coverEmoji":  challenge.CoverEmoji,
 		"published":   published,
+		"createdBy":   displayCreator(createdByRole, creatorName),
 		"exercises":   exerciseResponses,
 		"createdAt":   challenge.CreatedAt.Time.Format("2006-01-02T15:04:05Z"),
 	})
+}
+
+// displayCreator turns role + student name into a display label.
+func displayCreator(role, name string) string {
+	if role == "parent" || name == "" {
+		return "Förälder"
+	}
+	return name
 }
 
 // GET /api/challenges
@@ -211,34 +227,41 @@ func (h *ChallengeHandler) List(w http.ResponseWriter, r *http.Request) {
 	userID := auth.GetUserIDFromContext(r.Context())
 	role := auth.GetRoleFromContext(r.Context())
 
-	parentID, _, err := resolveParentID(r.Context(), h.store, userID, role)
+	parentID, _, _, err := resolveParentID(r.Context(), h.store, userID, role)
 	if err != nil {
 		http.Error(w, `{"error":"Kunde inte identifiera användaren"}`, http.StatusUnauthorized)
 		return
 	}
 
-	var challengeList []queries.Challenge
+	result := []map[string]interface{}{}
+	addItem := func(id pgtype.UUID, title, description, coverEmoji, createdByRole, creatorName string, published bool, createdAt pgtype.Timestamptz) {
+		result = append(result, map[string]interface{}{
+			"id":          uuidToString(id),
+			"title":       title,
+			"description": description,
+			"coverEmoji":  coverEmoji,
+			"published":   published,
+			"createdBy":   displayCreator(createdByRole, creatorName),
+			"createdAt":   createdAt.Time.Format("2006-01-02T15:04:05Z"),
+		})
+	}
 	if role == "parent" {
-		challengeList, err = h.store.ListChallengesByParentID(r.Context(), parentID)
+		rows, listErr := h.store.ListChallengesByParentID(r.Context(), parentID)
+		err = listErr
+		for _, c := range rows {
+			addItem(c.ID, c.Title, c.Description, c.CoverEmoji, c.CreatedByRole, c.CreatorName, c.Published, c.CreatedAt)
+		}
 	} else {
-		challengeList, err = h.store.ListPublishedChallengesByParentID(r.Context(), parentID)
+		rows, listErr := h.store.ListPublishedChallengesByParentID(r.Context(), parentID)
+		err = listErr
+		for _, c := range rows {
+			addItem(c.ID, c.Title, c.Description, c.CoverEmoji, c.CreatedByRole, c.CreatorName, c.Published, c.CreatedAt)
+		}
 	}
 	if err != nil {
 		log.Error().Err(err).Msg("failed to list challenges")
 		http.Error(w, `{"error":"Kunde inte hämta utmaningar"}`, http.StatusInternalServerError)
 		return
-	}
-
-	result := make([]map[string]interface{}, len(challengeList))
-	for i, c := range challengeList {
-		result[i] = map[string]interface{}{
-			"id":          uuidToString(c.ID),
-			"title":       c.Title,
-			"description": c.Description,
-			"coverEmoji":  c.CoverEmoji,
-			"published":   c.Published,
-			"createdAt":   c.CreatedAt.Time.Format("2006-01-02T15:04:05Z"),
-		}
 	}
 	writeJSON(w, http.StatusOK, result)
 }
@@ -301,7 +324,7 @@ func (h *ChallengeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Only members of the owning family may see a challenge; children only published ones
-	callerParentID, _, err := resolveParentID(r.Context(), h.store, userID, role)
+	callerParentID, _, _, err := resolveParentID(r.Context(), h.store, userID, role)
 	if err != nil {
 		http.Error(w, `{"error":"Kunde inte identifiera användaren"}`, http.StatusUnauthorized)
 		return

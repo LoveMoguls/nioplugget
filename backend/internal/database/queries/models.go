@@ -17,14 +17,15 @@ type ApiKey struct {
 }
 
 type Challenge struct {
-	ID            pgtype.UUID        `json:"id"`
-	ParentID      pgtype.UUID        `json:"parent_id"`
-	CreatedByRole string             `json:"created_by_role"`
-	Title         string             `json:"title"`
-	Description   string             `json:"description"`
-	CoverEmoji    string             `json:"cover_emoji"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	Published     bool               `json:"published"`
+	ID                 pgtype.UUID        `json:"id"`
+	ParentID           pgtype.UUID        `json:"parent_id"`
+	CreatedByRole      string             `json:"created_by_role"`
+	Title              string             `json:"title"`
+	Description        string             `json:"description"`
+	CoverEmoji         string             `json:"cover_emoji"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	Published          bool               `json:"published"`
+	CreatedByStudentID pgtype.UUID        `json:"created_by_student_id"`
 }
 
 type ChallengeExercise struct {

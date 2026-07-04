@@ -18,7 +18,14 @@
 		title: string;
 		description: string;
 		coverEmoji: string;
+		createdBy: string;
 		createdAt: string;
+	}
+
+	function formatCreated(iso: string): string {
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return '';
+		return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
 	}
 
 	interface DueReview {
@@ -132,6 +139,9 @@
 							<div class="mb-1 text-2xl">{challenge.coverEmoji}</div>
 							<CardTitle class="text-base">{challenge.title}</CardTitle>
 							<CardDescription>{challenge.description}</CardDescription>
+							<p class="text-xs text-muted-foreground/80">
+								{challenge.createdBy} · {formatCreated(challenge.createdAt)}
+							</p>
 						</CardHeader>
 					</Card>
 				</a>

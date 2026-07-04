@@ -13,17 +13,18 @@ import (
 
 const createChallenge = `-- name: CreateChallenge :one
 
-INSERT INTO challenges (parent_id, created_by_role, title, description, cover_emoji)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
+INSERT INTO challenges (parent_id, created_by_role, title, description, cover_emoji, created_by_student_id)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at, published, created_by_student_id
 `
 
 type CreateChallengeParams struct {
-	ParentID      pgtype.UUID `json:"parent_id"`
-	CreatedByRole string      `json:"created_by_role"`
-	Title         string      `json:"title"`
-	Description   string      `json:"description"`
-	CoverEmoji    string      `json:"cover_emoji"`
+	ParentID           pgtype.UUID `json:"parent_id"`
+	CreatedByRole      string      `json:"created_by_role"`
+	Title              string      `json:"title"`
+	Description        string      `json:"description"`
+	CoverEmoji         string      `json:"cover_emoji"`
+	CreatedByStudentID pgtype.UUID `json:"created_by_student_id"`
 }
 
 // backend/db/queries/challenges.sql
@@ -34,6 +35,7 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 		arg.Title,
 		arg.Description,
 		arg.CoverEmoji,
+		arg.CreatedByStudentID,
 	)
 	var i Challenge
 	err := row.Scan(
@@ -45,6 +47,7 @@ func (q *Queries) CreateChallenge(ctx context.Context, arg CreateChallengeParams
 		&i.CoverEmoji,
 		&i.CreatedAt,
 		&i.Published,
+		&i.CreatedByStudentID,
 	)
 	return i, err
 }
@@ -99,7 +102,7 @@ func (q *Queries) DeleteChallenge(ctx context.Context, arg DeleteChallengeParams
 }
 
 const getChallengeByID = `-- name: GetChallengeByID :one
-SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
+SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published, created_by_student_id
 FROM challenges
 WHERE id = $1
 `
@@ -116,6 +119,7 @@ func (q *Queries) GetChallengeByID(ctx context.Context, id pgtype.UUID) (Challen
 		&i.CoverEmoji,
 		&i.CreatedAt,
 		&i.Published,
+		&i.CreatedByStudentID,
 	)
 	return i, err
 }
@@ -234,21 +238,35 @@ func (q *Queries) ListChallengeExercisesWithProgress(ctx context.Context, arg Li
 }
 
 const listChallengesByParentID = `-- name: ListChallengesByParentID :many
-SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
-FROM challenges
-WHERE parent_id = $1
-ORDER BY created_at DESC
+SELECT c.id, c.parent_id, c.created_by_role, c.title, c.description, c.cover_emoji, c.created_at, c.published,
+    COALESCE(st.name, '')::text AS creator_name
+FROM challenges c
+LEFT JOIN students st ON st.id = c.created_by_student_id
+WHERE c.parent_id = $1
+ORDER BY c.created_at DESC
 `
 
-func (q *Queries) ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]Challenge, error) {
+type ListChallengesByParentIDRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	ParentID      pgtype.UUID        `json:"parent_id"`
+	CreatedByRole string             `json:"created_by_role"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverEmoji    string             `json:"cover_emoji"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	Published     bool               `json:"published"`
+	CreatorName   string             `json:"creator_name"`
+}
+
+func (q *Queries) ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]ListChallengesByParentIDRow, error) {
 	rows, err := q.db.Query(ctx, listChallengesByParentID, parentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Challenge
+	var items []ListChallengesByParentIDRow
 	for rows.Next() {
-		var i Challenge
+		var i ListChallengesByParentIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ParentID,
@@ -258,6 +276,7 @@ func (q *Queries) ListChallengesByParentID(ctx context.Context, parentID pgtype.
 			&i.CoverEmoji,
 			&i.CreatedAt,
 			&i.Published,
+			&i.CreatorName,
 		); err != nil {
 			return nil, err
 		}
@@ -270,21 +289,35 @@ func (q *Queries) ListChallengesByParentID(ctx context.Context, parentID pgtype.
 }
 
 const listPublishedChallengesByParentID = `-- name: ListPublishedChallengesByParentID :many
-SELECT id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
-FROM challenges
-WHERE parent_id = $1 AND published = true
-ORDER BY created_at DESC
+SELECT c.id, c.parent_id, c.created_by_role, c.title, c.description, c.cover_emoji, c.created_at, c.published,
+    COALESCE(st.name, '')::text AS creator_name
+FROM challenges c
+LEFT JOIN students st ON st.id = c.created_by_student_id
+WHERE c.parent_id = $1 AND c.published = true
+ORDER BY c.created_at DESC
 `
 
-func (q *Queries) ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]Challenge, error) {
+type ListPublishedChallengesByParentIDRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	ParentID      pgtype.UUID        `json:"parent_id"`
+	CreatedByRole string             `json:"created_by_role"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverEmoji    string             `json:"cover_emoji"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	Published     bool               `json:"published"`
+	CreatorName   string             `json:"creator_name"`
+}
+
+func (q *Queries) ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]ListPublishedChallengesByParentIDRow, error) {
 	rows, err := q.db.Query(ctx, listPublishedChallengesByParentID, parentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Challenge
+	var items []ListPublishedChallengesByParentIDRow
 	for rows.Next() {
-		var i Challenge
+		var i ListPublishedChallengesByParentIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ParentID,
@@ -294,6 +327,7 @@ func (q *Queries) ListPublishedChallengesByParentID(ctx context.Context, parentI
 			&i.CoverEmoji,
 			&i.CreatedAt,
 			&i.Published,
+			&i.CreatorName,
 		); err != nil {
 			return nil, err
 		}
@@ -309,7 +343,7 @@ const publishChallenge = `-- name: PublishChallenge :one
 UPDATE challenges
 SET title = $1, published = true
 WHERE id = $2 AND parent_id = $3
-RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at, published
+RETURNING id, parent_id, created_by_role, title, description, cover_emoji, created_at, published, created_by_student_id
 `
 
 type PublishChallengeParams struct {
@@ -330,6 +364,7 @@ func (q *Queries) PublishChallenge(ctx context.Context, arg PublishChallengePara
 		&i.CoverEmoji,
 		&i.CreatedAt,
 		&i.Published,
+		&i.CreatedByStudentID,
 	)
 	return i, err
 }

@@ -30,7 +30,14 @@
 		description: string;
 		coverEmoji: string;
 		published: boolean;
+		createdBy: string;
 		createdAt: string;
+	}
+
+	function formatCreated(iso: string): string {
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return '';
+		return d.toLocaleString('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 	}
 	interface ChallengeDraft {
 		id: string;
@@ -99,9 +106,9 @@
 		challengeError = '';
 		try {
 			const published = (await challengesApi.publish(draft.id, draftTitle.trim() || draft.title)) as ChallengeItem;
-			challengeList = [published, ...challengeList];
 			challengeSuccess = `✓ Publicerad: ${published.title}`;
 			draft = null;
+			await loadChallenges();
 		} catch (err) {
 			challengeError = getErrorMessage(err, 'Kunde inte publicera utmaningen.');
 		} finally {
@@ -529,6 +536,9 @@
 									{/if}
 								</p>
 								<p class="text-xs text-muted-foreground">{challenge.description}</p>
+								<p class="mt-0.5 text-xs text-muted-foreground/80">
+									{formatCreated(challenge.createdAt)} · av {challenge.createdBy}
+								</p>
 							</div>
 							<Button
 								variant="outline"

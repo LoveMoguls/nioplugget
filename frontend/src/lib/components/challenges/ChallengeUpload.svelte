@@ -12,6 +12,7 @@
 		description: string;
 		coverEmoji: string;
 		published: boolean;
+		createdBy: string;
 		createdAt: string;
 	}
 

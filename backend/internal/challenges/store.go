@@ -13,8 +13,8 @@ import (
 type ChallengeStore interface {
 	CreateChallenge(ctx context.Context, arg queries.CreateChallengeParams) (queries.Challenge, error)
 	CreateChallengeExercise(ctx context.Context, arg queries.CreateChallengeExerciseParams) (queries.ChallengeExercise, error)
-	ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error)
-	ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error)
+	ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListChallengesByParentIDRow, error)
+	ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListPublishedChallengesByParentIDRow, error)
 	PublishChallenge(ctx context.Context, arg queries.PublishChallengeParams) (queries.Challenge, error)
 	GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error)
 	ListChallengeExercisesByChallengeID(ctx context.Context, challengeID pgtype.UUID) ([]queries.ChallengeExercise, error)
@@ -41,11 +41,11 @@ func (s *QueriesStore) CreateChallengeExercise(ctx context.Context, arg queries.
 	return s.q.CreateChallengeExercise(ctx, arg)
 }
 
-func (s *QueriesStore) ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error) {
+func (s *QueriesStore) ListChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListChallengesByParentIDRow, error) {
 	return s.q.ListChallengesByParentID(ctx, parentID)
 }
 
-func (s *QueriesStore) ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.Challenge, error) {
+func (s *QueriesStore) ListPublishedChallengesByParentID(ctx context.Context, parentID pgtype.UUID) ([]queries.ListPublishedChallengesByParentIDRow, error) {
 	return s.q.ListPublishedChallengesByParentID(ctx, parentID)
 }
 
@@ -77,22 +77,23 @@ func (s *QueriesStore) GetAPIKeyByParentID(ctx context.Context, parentID pgtype.
 	return s.q.GetAPIKeyByParentID(ctx, parentID)
 }
 
-// resolveParentID returns parent_id and created_by_role for both parent and child callers.
-func resolveParentID(ctx context.Context, store ChallengeStore, userID, role string) (pgtype.UUID, string, error) {
+// resolveParentID returns parent_id and created_by_role for both parent and
+// child callers. For a child caller the student record is returned as well.
+func resolveParentID(ctx context.Context, store ChallengeStore, userID, role string) (pgtype.UUID, string, *queries.Student, error) {
 	var parentID pgtype.UUID
 	if role == "parent" {
 		if err := parentID.Scan(userID); err != nil {
-			return pgtype.UUID{}, "", fmt.Errorf("invalid parent ID")
+			return pgtype.UUID{}, "", nil, fmt.Errorf("invalid parent ID")
 		}
-		return parentID, "parent", nil
+		return parentID, "parent", nil, nil
 	}
 	var studentID pgtype.UUID
 	if err := studentID.Scan(userID); err != nil {
-		return pgtype.UUID{}, "", fmt.Errorf("invalid student ID")
+		return pgtype.UUID{}, "", nil, fmt.Errorf("invalid student ID")
 	}
 	student, err := store.GetStudentByID(ctx, studentID)
 	if err != nil {
-		return pgtype.UUID{}, "", fmt.Errorf("student not found")
+		return pgtype.UUID{}, "", nil, fmt.Errorf("student not found")
 	}
-	return student.ParentID, "child", nil
+	return student.ParentID, "child", &student, nil
 }
