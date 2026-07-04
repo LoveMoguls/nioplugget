@@ -21,7 +21,6 @@ type Store interface {
 	GetTelegramSession(ctx context.Context, chatID int64) (queries.TelegramSession, error)
 	UpsertTelegramSession(ctx context.Context, arg queries.UpsertTelegramSessionParams) (queries.TelegramSession, error)
 	TryInsertTelegramReminder(ctx context.Context, arg queries.TryInsertTelegramReminderParams) (int64, error)
-	GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error)
 
 	ListSubjects(ctx context.Context) ([]queries.ListSubjectsRow, error)
 	GetSubjectBySlug(ctx context.Context, slug string) (queries.GetSubjectBySlugRow, error)
@@ -79,10 +78,6 @@ func (s *QueriesStore) UpsertTelegramSession(ctx context.Context, arg queries.Up
 
 func (s *QueriesStore) TryInsertTelegramReminder(ctx context.Context, arg queries.TryInsertTelegramReminderParams) (int64, error) {
 	return s.q.TryInsertTelegramReminder(ctx, arg)
-}
-
-func (s *QueriesStore) GetChallengeByID(ctx context.Context, id pgtype.UUID) (queries.Challenge, error) {
-	return s.q.GetChallengeByID(ctx, id)
 }
 
 func (s *QueriesStore) ListSubjects(ctx context.Context) ([]queries.ListSubjectsRow, error) {
