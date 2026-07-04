@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -16,6 +18,39 @@ import (
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 )
+
+const maxPastedTextLen = 20000
+
+// uploadMediaType validates size/type and returns the normalized media type:
+// an image MIME, "application/pdf", or "text/plain" (.txt/.md contents are
+// merged into the pasted text instead of being sent as document blocks).
+func uploadMediaType(fh *multipart.FileHeader) (string, error) {
+	ct := fh.Header.Get("Content-Type")
+	name := strings.ToLower(fh.Filename)
+	switch {
+	case ct == "application/pdf" || strings.HasSuffix(name, ".pdf"):
+		if fh.Size > 10<<20 {
+			return "", fmt.Errorf("PDF-filer får max vara 10 MB")
+		}
+		return "application/pdf", nil
+	case ct == "text/plain" || ct == "text/markdown" ||
+		strings.HasSuffix(name, ".txt") || strings.HasSuffix(name, ".md"):
+		if fh.Size > 1<<20 {
+			return "", fmt.Errorf("Textfiler får max vara 1 MB")
+		}
+		return "text/plain", nil
+	case strings.HasPrefix(ct, "image/") || ct == "":
+		if fh.Size > 5<<20 {
+			return "", fmt.Errorf("Varje bild får max vara 5 MB")
+		}
+		if ct == "" {
+			ct = "image/jpeg"
+		}
+		return ct, nil
+	default:
+		return "", fmt.Errorf("Filtypen stöds inte — använd bilder, PDF eller text")
+	}
+}
 
 // ChallengeHandler provides HTTP handlers for challenges.
 type ChallengeHandler struct {
@@ -49,22 +84,32 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := r.ParseMultipartForm(30 << 20); err != nil {
+	if err := r.ParseMultipartForm(40 << 20); err != nil {
 		http.Error(w, `{"error":"Kunde inte läsa filerna"}`, http.StatusBadRequest)
 		return
 	}
 
-	files := r.MultipartForm.File["images"]
-	if len(files) == 0 || len(files) > 6 {
-		http.Error(w, `{"error":"Ladda upp 1-6 bilder"}`, http.StatusBadRequest)
+	// Accept both the new "files" field and the legacy "images" field
+	files := append(r.MultipartForm.File["files"], r.MultipartForm.File["images"]...)
+	pastedText := strings.TrimSpace(r.FormValue("text"))
+	if len(pastedText) > maxPastedTextLen {
+		pastedText = pastedText[:maxPastedTextLen]
+	}
+
+	if len(files) > 6 {
+		http.Error(w, `{"error":"Ladda upp max 6 filer"}`, http.StatusBadRequest)
+		return
+	}
+	if len(files) == 0 && pastedText == "" {
+		http.Error(w, `{"error":"Ladda upp minst en fil eller klistra in text"}`, http.StatusBadRequest)
 		return
 	}
 
-	var imageDataList [][]byte
-	var mediaTypes []string
+	var parts []UploadPart
 	for _, fh := range files {
-		if fh.Size > 5<<20 {
-			http.Error(w, `{"error":"Varje bild får max vara 5 MB"}`, http.StatusBadRequest)
+		mediaType, err := uploadMediaType(fh)
+		if err != nil {
+			http.Error(w, `{"error":"`+err.Error()+`"}`, http.StatusBadRequest)
 			return
 		}
 		f, err := fh.Open()
@@ -72,24 +117,24 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"error":"Kunde inte öppna filen"}`, http.StatusInternalServerError)
 			return
 		}
-		defer f.Close()
 		data, err := io.ReadAll(f)
+		f.Close()
 		if err != nil {
 			http.Error(w, `{"error":"Kunde inte läsa filen"}`, http.StatusInternalServerError)
 			return
 		}
-		ct := fh.Header.Get("Content-Type")
-		if ct == "" {
-			ct = "image/jpeg"
+		if mediaType == "text/plain" {
+			// Text files go into the text portion, not as document blocks
+			pastedText = strings.TrimSpace(pastedText + "\n\n" + string(data))
+			continue
 		}
-		imageDataList = append(imageDataList, data)
-		mediaTypes = append(mediaTypes, ct)
+		parts = append(parts, UploadPart{Data: data, MediaType: mediaType})
 	}
 
-	generated, err := GenerateChallenge(r.Context(), string(decryptedKey), imageDataList, mediaTypes)
+	generated, err := GenerateChallenge(r.Context(), string(decryptedKey), parts, pastedText)
 	if err != nil {
 		log.Error().Err(err).Msg("challenge generation failed")
-		http.Error(w, `{"error":"Kunde inte läsa bilderna. Försök med tydligare foton."}`, http.StatusUnprocessableEntity)
+		http.Error(w, `{"error":"Kunde inte läsa materialet. Försök med tydligare foton eller mer text."}`, http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -135,11 +180,27 @@ func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	// Children create challenges for themselves — publish immediately.
+	// Parents get a draft to review/rename first.
+	published := false
+	if createdByRole == "child" {
+		if _, err := h.store.PublishChallenge(r.Context(), queries.PublishChallengeParams{
+			Title:    challenge.Title,
+			ID:       challenge.ID,
+			ParentID: parentID,
+		}); err != nil {
+			log.Error().Err(err).Msg("failed to auto-publish child-created challenge")
+		} else {
+			published = true
+		}
+	}
+
 	writeJSON(w, http.StatusCreated, map[string]interface{}{
 		"id":          uuidToString(challenge.ID),
 		"title":       challenge.Title,
 		"description": challenge.Description,
 		"coverEmoji":  challenge.CoverEmoji,
+		"published":   published,
 		"exercises":   exerciseResponses,
 		"createdAt":   challenge.CreatedAt.Time.Format("2006-01-02T15:04:05Z"),
 	})

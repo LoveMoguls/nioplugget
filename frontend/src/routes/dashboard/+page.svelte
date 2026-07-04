@@ -9,6 +9,7 @@
 	import { apiKey as apiKeyApi, children as childrenApi, challenges as challengesApi, getErrorMessage } from '$lib/api';
 	import { user, isLoggedIn, isParent } from '$lib/stores/auth';
 	import { browser } from '$app/environment';
+	import ChallengeUpload from '$lib/components/challenges/ChallengeUpload.svelte';
 
 	// API Key state
 	interface ApiKeyData {
@@ -28,6 +29,7 @@
 		title: string;
 		description: string;
 		coverEmoji: string;
+		published: boolean;
 		createdAt: string;
 	}
 	interface ChallengeDraft {
@@ -37,14 +39,8 @@
 		coverEmoji: string;
 	}
 	let challengeList = $state<ChallengeItem[]>([]);
-	let challengeFiles = $state<File[]>([]);
-	let challengePreviews = $state<string[]>([]);
-	let challengeLoading = $state(false);
 	let challengeError = $state('');
 	let challengeSuccess = $state('');
-	let challengeStep = $state('');
-	let challengeElapsed = $state(0);
-	let elapsedInterval = $state<ReturnType<typeof setInterval> | null>(null);
 	let draft = $state<ChallengeDraft | null>(null);
 	let draftTitle = $state('');
 	let publishLoading = $state(false);
@@ -85,40 +81,16 @@
 		}
 	}
 
-	async function handleCreateChallenge(e: Event) {
-		e.preventDefault();
+	function handleChallengeCreated(created: ChallengeItem) {
 		challengeError = '';
 		challengeSuccess = '';
-		if (challengeFiles.length === 0) {
-			challengeError = 'Välj minst en bild.';
-			return;
-		}
-		challengeLoading = true;
-		challengeElapsed = 0;
-		challengeStep = 'Skickar bilder...';
-		elapsedInterval = setInterval(() => {
-			challengeElapsed += 1;
-			if (challengeElapsed === 3) challengeStep = 'Claude läser bilderna...';
-			else if (challengeElapsed === 10) challengeStep = 'Analyserar innehållet...';
-			else if (challengeElapsed === 25) challengeStep = 'Skapar övningar...';
-			else if (challengeElapsed === 45) challengeStep = 'Nästan klart...';
-		}, 1000);
-		try {
-			const created = (await challengesApi.create(challengeFiles)) as ChallengeItem;
-			draft = { id: created.id, title: created.title, description: created.description, coverEmoji: created.coverEmoji };
-			draftTitle = created.title;
-			challengeFiles = [];
-			challengePreviews.forEach(URL.revokeObjectURL);
-			challengePreviews = [];
-			const input = document.getElementById('challenge-files') as HTMLInputElement;
-			if (input) input.value = '';
-		} catch (err) {
-			challengeError = getErrorMessage(err, 'Kunde inte skapa utmaningen. Försök med tydligare foton.');
-		} finally {
-			challengeLoading = false;
-			challengeStep = '';
-			if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
-		}
+		draft = {
+			id: created.id,
+			title: created.title,
+			description: created.description,
+			coverEmoji: created.coverEmoji,
+		};
+		draftTitle = created.title;
 	}
 
 	async function handlePublish() {
@@ -529,7 +501,7 @@
 		<CardHeader>
 			<CardTitle>Utmaningar</CardTitle>
 			<CardDescription>
-				Fotografera prov, läxor eller övningsuppgifter så skapar AI:n en interaktiv utmaning.
+				Fota, släpp en PDF eller klistra in text från vilken läxa som helst — AI:n gör en interaktiv utmaning av den.
 			</CardDescription>
 		</CardHeader>
 		<CardContent>
@@ -550,7 +522,12 @@
 					{#each challengeList as challenge}
 						<div class="flex items-center justify-between rounded-lg border border-border p-3">
 							<div class="min-w-0 flex-1">
-								<p class="font-medium">{challenge.coverEmoji} {challenge.title}</p>
+								<p class="font-medium">
+									{challenge.coverEmoji} {challenge.title}
+									{#if !challenge.published}
+										<span class="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">Utkast</span>
+									{/if}
+								</p>
 								<p class="text-xs text-muted-foreground">{challenge.description}</p>
 							</div>
 							<Button
@@ -589,72 +566,9 @@
 				</div>
 			{/if}
 
-			<!-- Upload form -->
+			<!-- Upload -->
 			{#if !draft}
-			<form onsubmit={handleCreateChallenge} class="flex flex-col gap-3">
-				<div class="flex flex-col gap-1.5">
-					<Label for="challenge-files">Bilder (1–6 st, max 5 MB/bild)</Label>
-					<input
-						id="challenge-files"
-						type="file"
-						accept="image/*"
-						multiple
-						disabled={challengeLoading}
-						class="block w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:opacity-50"
-						onchange={(e) => {
-							const input = e.currentTarget as HTMLInputElement;
-							challengeFiles = input.files ? Array.from(input.files).slice(0, 6) : [];
-							challengePreviews.forEach(URL.revokeObjectURL);
-							challengePreviews = challengeFiles.map((f) => URL.createObjectURL(f));
-						}}
-					/>
-					{#if challengePreviews.length > 0 && !challengeLoading}
-						<div class="flex flex-wrap gap-2 pt-1">
-							{#each challengePreviews as src, i}
-								<div class="relative">
-									<img
-										{src}
-										alt="Bild {i + 1}"
-										class="h-24 w-24 rounded-md border border-border object-cover"
-									/>
-									<button
-										type="button"
-										onclick={() => {
-											URL.revokeObjectURL(challengePreviews[i]);
-											challengeFiles = challengeFiles.filter((_, j) => j !== i);
-											challengePreviews = challengePreviews.filter((_, j) => j !== i);
-										}}
-										class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground"
-									>✕</button>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				{#if challengeLoading}
-					<div class="rounded-lg border border-border bg-muted/30 p-4">
-						<div class="mb-3 flex items-center gap-3">
-							<svg class="h-5 w-5 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-							</svg>
-							<span class="text-sm font-medium">{challengeStep}</span>
-						</div>
-						<div class="mb-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-							<div
-								class="h-full rounded-full bg-primary transition-all duration-1000"
-								style="width: {Math.min(95, challengeElapsed * 1.8)}%"
-							></div>
-						</div>
-						<p class="text-right text-xs text-muted-foreground">{challengeElapsed}s</p>
-					</div>
-				{:else}
-					<Button type="submit" disabled={challengeFiles.length === 0}>
-						Skapa utmaning
-					</Button>
-				{/if}
-			</form>
+				<ChallengeUpload onCreated={handleChallengeCreated} />
 			{/if}
 		</CardContent>
 	</Card>

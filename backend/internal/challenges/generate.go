@@ -19,7 +19,7 @@ type GeneratedExercise struct {
 	SystemPrompt string `json:"system_prompt"`
 }
 
-// GeneratedChallenge is the full course Claude creates from homework images.
+// GeneratedChallenge is the full course Claude creates from homework material.
 type GeneratedChallenge struct {
 	Title       string              `json:"title"`
 	Description string              `json:"description"`
@@ -27,8 +27,14 @@ type GeneratedChallenge struct {
 	Exercises   []GeneratedExercise `json:"exercises"`
 }
 
+// UploadPart is one uploaded file to base the challenge on.
+type UploadPart struct {
+	Data      []byte
+	MediaType string // "image/jpeg", "image/png", "image/gif", "image/webp" or "application/pdf"
+}
+
 const generationSystemPrompt = `Du är en pedagog som skapar engagerande studieövningar för en 13-årig elev.
-Analysera bilderna och skapa ett JSON-objekt med exakt följande struktur:
+Analysera materialet (bilder, dokument och/eller text från en läxa) och skapa ett JSON-objekt med exakt följande struktur:
 {
   "title": "En catchy, motiverande titel på svenska (max 40 tecken, gärna med utropstecken)",
   "description": "En kort mening som beskriver vad utmaningen handlar om",
@@ -44,17 +50,27 @@ Analysera bilderna och skapa ett JSON-objekt med exakt följande struktur:
 
 Skapa 4-6 övningar. Svara ENBART med JSON, ingen annan text.`
 
-// GenerateChallenge calls Claude with the provided images and returns a structured challenge.
-// mediaTypes should be MIME types like "image/jpeg", "image/png", "image/webp".
-func GenerateChallenge(ctx context.Context, apiKey string, imageDataList [][]byte, mediaTypes []string) (*GeneratedChallenge, error) {
+// GenerateChallenge calls Claude with the provided homework material (images,
+// PDFs and/or pasted text) and returns a structured challenge.
+func GenerateChallenge(ctx context.Context, apiKey string, parts []UploadPart, pastedText string) (*GeneratedChallenge, error) {
 	client := anthropic.NewClient(option.WithAPIKey(apiKey))
 
 	var contentBlocks []anthropic.ContentBlockParamUnion
-	for i, data := range imageDataList {
-		encoded := base64.StdEncoding.EncodeToString(data)
-		contentBlocks = append(contentBlocks, anthropic.NewImageBlockBase64(mediaTypes[i], encoded))
+	for _, part := range parts {
+		encoded := base64.StdEncoding.EncodeToString(part.Data)
+		if part.MediaType == "application/pdf" {
+			contentBlocks = append(contentBlocks, anthropic.NewDocumentBlock(anthropic.Base64PDFSourceParam{Data: encoded}))
+		} else {
+			contentBlocks = append(contentBlocks, anthropic.NewImageBlockBase64(part.MediaType, encoded))
+		}
 	}
-	contentBlocks = append(contentBlocks, anthropic.NewTextBlock("Analysera bilderna och skapa övningarna som JSON."))
+	if pastedText != "" {
+		contentBlocks = append(contentBlocks, anthropic.NewTextBlock("LÄXTEXT:\n"+pastedText))
+	}
+	if len(contentBlocks) == 0 {
+		return nil, fmt.Errorf("no material provided")
+	}
+	contentBlocks = append(contentBlocks, anthropic.NewTextBlock("Analysera materialet och skapa övningarna som JSON."))
 
 	resp, err := client.Messages.New(ctx, anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaudeSonnet4_6,

@@ -130,9 +130,10 @@ export const progress = {
 export const challenges = {
 	list: () => apiFetch('/api/challenges'),
 	get: (id: string) => apiFetch(`/api/challenges/${id}`),
-	create: (images: File[]) => {
+	create: (files: File[], text = '') => {
 		const form = new FormData();
-		images.forEach((img) => form.append('images', img));
+		files.forEach((f) => form.append('files', f));
+		if (text.trim()) form.append('text', text.trim());
 		return apiUpload('/api/challenges', form);
 	},
 	publish: (id: string, title: string) =>

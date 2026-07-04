@@ -4,6 +4,7 @@
 	import { Card, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
 	import { content, reviews, challenges } from '$lib/api';
 	import { user, isChild } from '$lib/stores/auth';
+	import ChallengeUpload from '$lib/components/challenges/ChallengeUpload.svelte';
 
 	interface Subject {
 		id: string;
@@ -36,6 +37,7 @@
 	let challengeList: Challenge[] = $state([]);
 	let loading = $state(true);
 	let error = $state('');
+	let showCreate = $state(false);
 
 	onMount(async () => {
 		await user.checkAuth();
@@ -120,24 +122,53 @@
 		</div>
 	</div>
 
-	{#if challengeList.length > 0}
-		<div class="mb-8">
-			<h2 class="mb-4 text-xl font-semibold">Utmaningar</h2>
-			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{#each challengeList as challenge}
-					<a href="/challenges/{challenge.id}" class="block transition-transform hover:scale-[1.02]">
-						<Card class="h-full hover:shadow-md">
-							<CardHeader class="pb-3">
-								<div class="mb-1 text-2xl">{challenge.coverEmoji}</div>
-								<CardTitle class="text-base">{challenge.title}</CardTitle>
-								<CardDescription>{challenge.description}</CardDescription>
-							</CardHeader>
-						</Card>
-					</a>
-				{/each}
-			</div>
+	<div class="mb-8">
+		<h2 class="mb-4 text-xl font-semibold">Utmaningar</h2>
+		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			{#each challengeList as challenge}
+				<a href="/challenges/{challenge.id}" class="block transition-transform hover:scale-[1.02]">
+					<Card class="h-full hover:shadow-md">
+						<CardHeader class="pb-3">
+							<div class="mb-1 text-2xl">{challenge.coverEmoji}</div>
+							<CardTitle class="text-base">{challenge.title}</CardTitle>
+							<CardDescription>{challenge.description}</CardDescription>
+						</CardHeader>
+					</Card>
+				</a>
+			{/each}
+
+			<!-- Create-your-own card -->
+			{#if !showCreate}
+				<button
+					onclick={() => (showCreate = true)}
+					class="flex h-full min-h-[120px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-border p-4 text-center transition-colors hover:border-primary/60 hover:bg-primary/5"
+				>
+					<span class="text-3xl">➕</span>
+					<span class="mt-1 text-sm font-medium">Skapa egen utmaning</span>
+					<span class="mt-0.5 text-xs text-muted-foreground">Fota eller klistra in vilken läxa som helst</span>
+				</button>
+			{/if}
 		</div>
-	{/if}
+
+		{#if showCreate}
+			<Card class="mt-3">
+				<CardHeader class="pb-2">
+					<div class="flex items-center justify-between">
+						<CardTitle class="text-base">Skapa egen utmaning</CardTitle>
+						<button
+							onclick={() => (showCreate = false)}
+							class="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+							aria-label="Stäng"
+						>✕</button>
+					</div>
+					<CardDescription>Funkar med alla ämnen — inte bara nationella prov!</CardDescription>
+				</CardHeader>
+				<div class="px-6 pb-6">
+					<ChallengeUpload onCreated={(c) => goto(`/challenges/${c.id}`)} />
+				</div>
+			</Card>
+		{/if}
+	</div>
 
 	<h2 class="mb-4 text-xl font-semibold">Ämnen</h2>
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
