@@ -44,6 +44,13 @@ func NewBot(api Sender, store Store, encSvc *apikey.EncryptionService) *Bot {
 	}
 }
 
+// recoverPanic logs a panic instead of letting it kill the process.
+func recoverPanic(where string) {
+	if r := recover(); r != nil {
+		log.Error().Interface("panic", r).Str("where", where).Msg("telegram: recovered panic")
+	}
+}
+
 // Run long-polls Telegram until ctx is canceled.
 func Run(ctx context.Context, api *API, bot *Bot) {
 	var offset int64
@@ -64,7 +71,10 @@ func Run(ctx context.Context, api *API, bot *Bot) {
 		backoff = time.Second
 		for _, upd := range updates {
 			offset = upd.UpdateID + 1
-			bot.HandleUpdate(ctx, upd)
+			func() {
+				defer recoverPanic("handle update")
+				bot.HandleUpdate(ctx, upd)
+			}()
 		}
 	}
 }

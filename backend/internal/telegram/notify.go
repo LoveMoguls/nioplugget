@@ -20,7 +20,10 @@ func RunReminderLoop(ctx context.Context, bot *Bot) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			bot.sendDueReminders(ctx, time.Now())
+			func() {
+				defer recoverPanic("reminder loop")
+				bot.sendDueReminders(ctx, time.Now())
+			}()
 		}
 	}
 }

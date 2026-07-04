@@ -312,7 +312,15 @@ func (h *ChallengeHandler) Publish(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.notifier != nil {
-		go h.notifier.ChallengePublished(context.WithoutCancel(r.Context()), updated.ID)
+		notifyCtx := context.WithoutCancel(r.Context())
+		go func() {
+			defer func() {
+				if rec := recover(); rec != nil {
+					log.Error().Interface("panic", rec).Str("where", "challenge published notify").Msg("challenges: recovered panic")
+				}
+			}()
+			h.notifier.ChallengePublished(notifyCtx, updated.ID)
+		}()
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
