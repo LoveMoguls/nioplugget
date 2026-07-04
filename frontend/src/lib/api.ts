@@ -144,6 +144,15 @@ export const challenges = {
 	delete: (id: string) => apiFetch(`/api/challenges/${id}`, { method: 'DELETE' }),
 };
 
+// Telegram
+export const telegram = {
+	createLinkCode: () =>
+		apiFetch('/api/telegram/link-code', { method: 'POST' }) as Promise<{
+			code: string;
+			link: string;
+		}>,
+};
+
 // Child auth
 export const childAuth = {
 	names: (parentEmail: string) =>
