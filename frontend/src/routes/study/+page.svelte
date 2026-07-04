@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { Card, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import { content, reviews, challenges, telegram } from '$lib/api';
+	import { content, reviews, challenges, telegram, type ApiError } from '$lib/api';
 	import { user, isChild } from '$lib/stores/auth';
 	import ChallengeUpload from '$lib/components/challenges/ChallengeUpload.svelte';
 
@@ -48,14 +48,19 @@
 	let showCreate = $state(false);
 	let telegramLink: string | null = $state(null);
 	let telegramError = $state('');
+	let telegramAvailable = $state(true);
 
 	async function connectTelegram() {
 		telegramError = '';
 		try {
 			const res = await telegram.createLinkCode();
 			telegramLink = res.link;
-		} catch {
-			telegramError = 'Kunde inte skapa kopplingslänk. Försök igen.';
+		} catch (err) {
+			if ((err as ApiError)?.status === 404) {
+				telegramAvailable = false;
+			} else {
+				telegramError = 'Kunde inte skapa kopplingslänk. Försök igen.';
+			}
 		}
 	}
 
@@ -206,18 +211,20 @@
 			{/each}
 		</div>
 
-		<section class="mt-8">
-			{#if telegramLink}
-				<p>
-					<a href={telegramLink} target="_blank" rel="noopener" class="underline">
-						📲 Öppna Telegram och tryck Start →
-					</a>
-				</p>
-				<p class="text-sm text-muted-foreground">Länken gäller i 15 minuter.</p>
-			{:else}
-				<Button type="button" variant="outline" onclick={connectTelegram}>Koppla Telegram</Button>
-				{#if telegramError}<p class="text-sm text-destructive">{telegramError}</p>{/if}
-			{/if}
-		</section>
+		{#if telegramAvailable}
+			<section class="mt-8">
+				{#if telegramLink}
+					<p>
+						<a href={telegramLink} target="_blank" rel="noopener" class="underline">
+							📲 Öppna Telegram och tryck Start →
+						</a>
+					</p>
+					<p class="text-sm text-muted-foreground">Länken gäller i 15 minuter.</p>
+				{:else}
+					<Button type="button" variant="outline" onclick={connectTelegram}>Koppla Telegram</Button>
+					{#if telegramError}<p class="text-sm text-destructive">{telegramError}</p>{/if}
+				{/if}
+			</section>
+		{/if}
 	{/if}
 </div>
