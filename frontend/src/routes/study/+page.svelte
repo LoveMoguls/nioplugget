@@ -205,19 +205,19 @@
 				</a>
 			{/each}
 		</div>
-	{/if}
 
-	<section class="mt-8">
-		{#if telegramLink}
-			<p>
-				<a href={telegramLink} target="_blank" rel="noopener" class="underline">
-					📲 Öppna Telegram och tryck Start →
-				</a>
-			</p>
-			<p class="text-sm text-muted-foreground">Länken gäller i 15 minuter.</p>
-		{:else}
-			<Button type="button" variant="outline" onclick={connectTelegram}>Koppla Telegram</Button>
-			{#if telegramError}<p class="text-sm text-destructive">{telegramError}</p>{/if}
-		{/if}
-	</section>
+		<section class="mt-8">
+			{#if telegramLink}
+				<p>
+					<a href={telegramLink} target="_blank" rel="noopener" class="underline">
+						📲 Öppna Telegram och tryck Start →
+					</a>
+				</p>
+				<p class="text-sm text-muted-foreground">Länken gäller i 15 minuter.</p>
+			{:else}
+				<Button type="button" variant="outline" onclick={connectTelegram}>Koppla Telegram</Button>
+				{#if telegramError}<p class="text-sm text-destructive">{telegramError}</p>{/if}
+			{/if}
+		</section>
+	{/if}
 </div>
