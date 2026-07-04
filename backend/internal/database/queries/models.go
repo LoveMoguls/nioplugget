@@ -113,6 +113,34 @@ type Subject struct {
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 }
 
+type TelegramLink struct {
+	ID             pgtype.UUID        `json:"id"`
+	StudentID      pgtype.UUID        `json:"student_id"`
+	TelegramUserID int64              `json:"telegram_user_id"`
+	ChatID         int64              `json:"chat_id"`
+	LinkedAt       pgtype.Timestamptz `json:"linked_at"`
+}
+
+type TelegramLinkCode struct {
+	Code      string             `json:"code"`
+	StudentID pgtype.UUID        `json:"student_id"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	UsedAt    pgtype.Timestamptz `json:"used_at"`
+}
+
+type TelegramReminder struct {
+	StudentID pgtype.UUID `json:"student_id"`
+	SentOn    pgtype.Date `json:"sent_on"`
+}
+
+type TelegramSession struct {
+	ChatID          int64              `json:"chat_id"`
+	StudentID       pgtype.UUID        `json:"student_id"`
+	State           string             `json:"state"`
+	ActiveSessionID pgtype.UUID        `json:"active_session_id"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Topic struct {
 	ID           pgtype.UUID        `json:"id"`
 	SubjectID    pgtype.UUID        `json:"subject_id"`
