@@ -2,6 +2,7 @@
 package challenges
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -52,15 +53,25 @@ func uploadMediaType(fh *multipart.FileHeader) (string, error) {
 	}
 }
 
+// Notifier is told when a challenge is published (e.g. the Telegram bot).
+type Notifier interface {
+	ChallengePublished(ctx context.Context, challengeID pgtype.UUID)
+}
+
 // ChallengeHandler provides HTTP handlers for challenges.
 type ChallengeHandler struct {
-	store  ChallengeStore
-	encSvc *apikey.EncryptionService
+	store    ChallengeStore
+	encSvc   *apikey.EncryptionService
+	notifier Notifier
 }
 
 func NewChallengeHandler(store ChallengeStore, encSvc *apikey.EncryptionService) *ChallengeHandler {
 	return &ChallengeHandler{store: store, encSvc: encSvc}
 }
+
+// SetNotifier wires an optional Notifier (e.g. the Telegram bot) that is
+// told about newly published challenges.
+func (h *ChallengeHandler) SetNotifier(n Notifier) { h.notifier = n }
 
 // POST /api/challenges — multipart/form-data with field "images" (1-6 files)
 func (h *ChallengeHandler) Create(w http.ResponseWriter, r *http.Request) {
@@ -298,6 +309,10 @@ func (h *ChallengeHandler) Publish(w http.ResponseWriter, r *http.Request) {
 		log.Error().Err(err).Msg("failed to publish challenge")
 		http.Error(w, `{"error":"Kunde inte publicera utmaningen"}`, http.StatusInternalServerError)
 		return
+	}
+
+	if h.notifier != nil {
+		go h.notifier.ChallengePublished(context.WithoutCancel(r.Context()), updated.ID)
 	}
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
