@@ -16,21 +16,40 @@ import (
 // dialogStore extends fakeStore with session/message/exercise state.
 type dialogStore struct {
 	*fakeStore
-	sessions  map[string]queries.GetSessionByIDRow
-	messages  []queries.Message
-	exercises map[string]queries.GetExerciseByIDRow
-	apiKeys   map[string]queries.ApiKey // key: uuidToString(parentID)
-	ended     *queries.EndSessionParams
-	schedule  *queries.UpsertReviewScheduleParams
+	sessions           map[string]queries.GetSessionByIDRow
+	messages           []queries.Message
+	exercises          map[string]queries.GetExerciseByIDRow
+	apiKeys            map[string]queries.ApiKey // key: uuidToString(parentID)
+	ended              *queries.EndSessionParams
+	schedule           *queries.UpsertReviewScheduleParams
+	challenges         map[string]queries.Challenge         // key: uuidToString(id)
+	challengeExercises map[string]queries.ChallengeExercise // key: uuidToString(id)
 }
 
 func newDialogStore() *dialogStore {
 	return &dialogStore{
-		fakeStore: newFakeStore(),
-		sessions:  map[string]queries.GetSessionByIDRow{},
-		exercises: map[string]queries.GetExerciseByIDRow{},
-		apiKeys:   map[string]queries.ApiKey{},
+		fakeStore:          newFakeStore(),
+		sessions:           map[string]queries.GetSessionByIDRow{},
+		exercises:          map[string]queries.GetExerciseByIDRow{},
+		apiKeys:            map[string]queries.ApiKey{},
+		challenges:         map[string]queries.Challenge{},
+		challengeExercises: map[string]queries.ChallengeExercise{},
 	}
+}
+
+func (d *dialogStore) GetChallengeByID(_ context.Context, id pgtype.UUID) (queries.Challenge, error) {
+	c, ok := d.challenges[uuidToString(id)]
+	if !ok {
+		return queries.Challenge{}, errors.New("not found")
+	}
+	return c, nil
+}
+func (d *dialogStore) GetChallengeExerciseByID(_ context.Context, id pgtype.UUID) (queries.ChallengeExercise, error) {
+	ce, ok := d.challengeExercises[uuidToString(id)]
+	if !ok {
+		return queries.ChallengeExercise{}, errors.New("not found")
+	}
+	return ce, nil
 }
 
 func (d *dialogStore) CreateSession(_ context.Context, arg queries.CreateSessionParams) (queries.CreateSessionRow, error) {
@@ -181,6 +200,86 @@ func TestEndActiveSessionScoresAndSchedules(t *testing.T) {
 	}
 	if !strings.Contains(starsMsg, "⭐⭐⭐") || !strings.Contains(starsMsg, "+30 XP") {
 		t.Errorf("expected 3 stars +30 XP, got %q", starsMsg)
+	}
+}
+
+func TestStartChallengeExerciseRejectsOtherFamilysChallenge(t *testing.T) {
+	d := newDialogStore()
+	link := setupLinkedStudent(d)
+	otherParentID := testUUID("99999999-9999-9999-9999-999999999999")
+	chalID := testUUID("66666666-6666-6666-6666-666666666666")
+	d.challenges[uuidToString(chalID)] = queries.Challenge{ID: chalID, ParentID: otherParentID, Published: true}
+	chexID := testUUID("77777777-7777-7777-7777-777777777777")
+	d.challengeExercises[uuidToString(chexID)] = queries.ChallengeExercise{ID: chexID, ChallengeID: chalID, Title: "Annans läxa"}
+	sender := &fakeSender{}
+	bot := NewBot(sender, d, nil)
+
+	bot.startChallengeExercise(context.Background(), link, uuidToString(chexID))
+
+	if len(sender.messages) != 1 || sender.messages[0].text != "Övningen hittades inte." {
+		t.Fatalf("expected rejection message, got %v", sender.messages)
+	}
+	if len(d.sessions) != 0 {
+		t.Errorf("no challenge session should be created, got %+v", d.sessions)
+	}
+	if d.tgSessions[555].State == "in_session" {
+		t.Errorf("telegram session should not enter in_session state: %+v", d.tgSessions[555])
+	}
+}
+
+func TestStartChallengeExerciseRejectsUnpublishedChallenge(t *testing.T) {
+	d := newDialogStore()
+	link := setupLinkedStudent(d)
+	student := d.students[uuidToString(link.StudentID)]
+	chalID := testUUID("66666666-6666-6666-6666-666666666666")
+	d.challenges[uuidToString(chalID)] = queries.Challenge{ID: chalID, ParentID: student.ParentID, Published: false}
+	chexID := testUUID("77777777-7777-7777-7777-777777777777")
+	d.challengeExercises[uuidToString(chexID)] = queries.ChallengeExercise{ID: chexID, ChallengeID: chalID, Title: "Draft"}
+	sender := &fakeSender{}
+	bot := NewBot(sender, d, nil)
+
+	bot.startChallengeExercise(context.Background(), link, uuidToString(chexID))
+
+	if len(sender.messages) != 1 || sender.messages[0].text != "Övningen hittades inte." {
+		t.Fatalf("expected rejection message, got %v", sender.messages)
+	}
+	if len(d.sessions) != 0 {
+		t.Errorf("no challenge session should be created, got %+v", d.sessions)
+	}
+}
+
+func TestSendChallengeExercisesRejectsOtherFamilysChallenge(t *testing.T) {
+	d := newDialogStore()
+	link := setupLinkedStudent(d)
+	otherParentID := testUUID("99999999-9999-9999-9999-999999999999")
+	chalID := testUUID("66666666-6666-6666-6666-666666666666")
+	d.challenges[uuidToString(chalID)] = queries.Challenge{ID: chalID, ParentID: otherParentID, Published: true}
+	sender := &fakeSender{}
+	bot := NewBot(sender, d, nil)
+
+	// ListChallengeExercisesWithProgress is deliberately left unstubbed on
+	// dialogStore/fakeStore; if the authz check below were bypassed the
+	// embedded nil Store would panic and fail this test.
+	bot.sendChallengeExercises(context.Background(), link, uuidToString(chalID))
+
+	if len(sender.messages) != 1 || sender.messages[0].text != "Övningen hittades inte." {
+		t.Fatalf("expected rejection message, got %v", sender.messages)
+	}
+}
+
+func TestSendChallengeExercisesRejectsUnpublishedChallenge(t *testing.T) {
+	d := newDialogStore()
+	link := setupLinkedStudent(d)
+	student := d.students[uuidToString(link.StudentID)]
+	chalID := testUUID("66666666-6666-6666-6666-666666666666")
+	d.challenges[uuidToString(chalID)] = queries.Challenge{ID: chalID, ParentID: student.ParentID, Published: false}
+	sender := &fakeSender{}
+	bot := NewBot(sender, d, nil)
+
+	bot.sendChallengeExercises(context.Background(), link, uuidToString(chalID))
+
+	if len(sender.messages) != 1 || sender.messages[0].text != "Övningen hittades inte." {
+		t.Fatalf("expected rejection message, got %v", sender.messages)
 	}
 }
 

@@ -96,8 +96,19 @@ func (b *Bot) sendChallenges(ctx context.Context, link queries.TelegramLink) {
 }
 
 func (b *Bot) sendChallengeExercises(ctx context.Context, link queries.TelegramLink, challengeIDStr string) {
+	challengeID := parseUUID(challengeIDStr)
+	challenge, err := b.store.GetChallengeByID(ctx, challengeID)
+	if err != nil {
+		b.send(ctx, link.ChatID, "Övningen hittades inte.", nil)
+		return
+	}
+	student, err := b.store.GetStudentByID(ctx, link.StudentID)
+	if err != nil || challenge.ParentID != student.ParentID || !challenge.Published {
+		b.send(ctx, link.ChatID, "Övningen hittades inte.", nil)
+		return
+	}
 	exercises, err := b.store.ListChallengeExercisesWithProgress(ctx, queries.ListChallengeExercisesWithProgressParams{
-		ChallengeID: parseUUID(challengeIDStr),
+		ChallengeID: challengeID,
 		StudentID:   link.StudentID,
 	})
 	if err != nil || len(exercises) == 0 {
