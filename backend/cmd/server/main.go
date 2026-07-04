@@ -24,6 +24,7 @@ import (
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
 	"github.com/trollstaven/nioplugget/backend/internal/progress"
 	"github.com/trollstaven/nioplugget/backend/internal/srs"
+	"github.com/trollstaven/nioplugget/backend/internal/telegram"
 )
 
 func main() {
@@ -91,6 +92,20 @@ func main() {
 	// Initialize challenges handler
 	challengeStore := challenges.NewQueriesStore(q)
 	challengeHandler := challenges.NewChallengeHandler(challengeStore, encSvc)
+
+	// Telegram bot (optional — enabled when TELEGRAM_BOT_TOKEN is set)
+	telegramToken := os.Getenv("TELEGRAM_BOT_TOKEN")
+	telegramBotUsername := os.Getenv("TELEGRAM_BOT_USERNAME")
+	var telegramStore *telegram.QueriesStore
+	if telegramToken != "" {
+		telegramStore = telegram.NewQueriesStore(q)
+		api := telegram.NewAPI(telegramToken)
+		bot := telegram.NewBot(api, telegramStore, encSvc)
+		challengeHandler.SetNotifier(bot)
+		go telegram.Run(ctx, api, bot)
+		go telegram.RunReminderLoop(ctx, bot)
+		log.Info().Msg("telegram bot started")
+	}
 
 	// Build router
 	r := chi.NewRouter()
@@ -231,6 +246,17 @@ func main() {
 		r.Get("/{id}/messages", chatHandler.ListMessages)
 		r.Post("/{id}/end", chatHandler.EndSession)
 	})
+
+	// Telegram link route (child only) — only when the bot is enabled
+	if telegramToken != "" {
+		linkHandler := telegram.NewLinkHandler(telegramStore, telegramBotUsername)
+		r.Route("/api/telegram", func(r chi.Router) {
+			r.Use(jwtauth.Verifier(tokenAuth))
+			r.Use(jwtauth.Authenticator(tokenAuth))
+			r.Use(auth.ChildOnly)
+			r.Post("/link-code", linkHandler.CreateLinkCode)
+		})
+	}
 
 	addr := ":" + port
 	log.Info().Str("addr", addr).Msg("starting server")

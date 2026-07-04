@@ -90,14 +90,28 @@ cd frontend && npm install && npm run dev
 
 The dev server starts on `http://localhost:5173`.
 
+### Telegram-bot (valfritt)
+
+Barnet kan plugga via Telegram. Skapa en bot hos @BotFather och sätt i `backend/.env`:
+
+```
+TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+TELEGRAM_BOT_USERNAME=NiopluggetBot
+```
+
+Utan token startar boten inte. Barnet kopplar sitt konto via knappen
+"Koppla Telegram" på studysidan.
+
 ## Environment Variables
 
-| Variable         | Required | Description                                                        |
-|------------------|----------|--------------------------------------------------------------------|
-| `DATABASE_URL`   | Yes      | PostgreSQL connection string                                       |
-| `ENCRYPTION_KEY` | Yes      | Hex-encoded key for AES-256-GCM encryption of stored API keys      |
-| `JWT_SECRET`     | Yes      | Secret for signing JWT tokens                                      |
-| `PORT`           | No       | Backend server port (default: `8080`)                              |
+| Variable                | Required | Description                                                        |
+|-------------------------|----------|--------------------------------------------------------------------|
+| `DATABASE_URL`          | Yes      | PostgreSQL connection string                                       |
+| `ENCRYPTION_KEY`        | Yes      | Hex-encoded key for AES-256-GCM encryption of stored API keys      |
+| `JWT_SECRET`            | Yes      | Secret for signing JWT tokens                                      |
+| `PORT`                  | No       | Backend server port (default: `8080`)                              |
+| `TELEGRAM_BOT_TOKEN`    | No       | Telegram bot token from @BotFather (unset = bot disabled)         |
+| `TELEGRAM_BOT_USERNAME` | No       | Telegram bot username, without `@`                                 |
 
 ## Project Structure
 
