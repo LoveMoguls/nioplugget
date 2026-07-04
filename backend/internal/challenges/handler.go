@@ -364,7 +364,7 @@ func (h *ChallengeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			if row.SessionID.Valid {
 				ex["sessionId"] = uuidToString(row.SessionID)
 				if row.Score.Valid {
-					stars := scoreToStars(int(row.Score.Int32))
+					stars := ScoreToStars(int(row.Score.Int32))
 					ex["stars"] = stars
 					ex["xp"] = stars * 10
 				}
@@ -428,7 +428,7 @@ func (h *ChallengeHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func scoreToStars(score int) int {
+func ScoreToStars(score int) int {
 	switch {
 	case score >= 5:
 		return 3
