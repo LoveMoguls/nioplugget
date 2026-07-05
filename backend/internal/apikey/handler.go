@@ -1,6 +1,7 @@
 package apikey
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -29,17 +30,41 @@ type APIKeyStore interface {
 	DeleteAPIKeyByParentID(parentID pgtype.UUID) error
 }
 
+// FamilyCodeVerifier reports whether a family code is required and whether
+// the given code is correct. Nil verifier = no requirement (bootstrap).
+type FamilyCodeVerifier func(ctx context.Context, code string) (required bool, ok bool)
+
 // APIKeyHandler handles HTTP requests for API key management.
 type APIKeyHandler struct {
-	store       APIKeyStore
-	encSvc      *EncryptionService
-	validateURL string // overrides Anthropic URL in tests
+	store            APIKeyStore
+	encSvc           *EncryptionService
+	validateURL      string // overrides Anthropic URL in tests
+	verifyFamilyCode FamilyCodeVerifier
 }
 
 // NewAPIKeyHandler creates a new APIKeyHandler.
 // validateURL is the Anthropic models URL; pass "" to use the default.
 func NewAPIKeyHandler(store APIKeyStore, encSvc *EncryptionService, validateURL string) *APIKeyHandler {
 	return &APIKeyHandler{store: store, encSvc: encSvc, validateURL: validateURL}
+}
+
+// SetFamilyCodeVerifier wires the family-code check used by Store/Update/Delete.
+// A nil verifier (the default) disables the requirement entirely.
+func (h *APIKeyHandler) SetFamilyCodeVerifier(v FamilyCodeVerifier) { h.verifyFamilyCode = v }
+
+// checkFamilyCode enforces the family-code requirement on mutating calls.
+// It returns true if the caller may proceed; otherwise it has already
+// written the 403 response.
+func (h *APIKeyHandler) checkFamilyCode(w http.ResponseWriter, r *http.Request, code string) bool {
+	if h.verifyFamilyCode == nil {
+		return true
+	}
+	required, ok := h.verifyFamilyCode(r.Context(), code)
+	if required && !ok {
+		writeJSON(w, http.StatusForbidden, map[string]string{"error": "Fel familjekod"})
+		return false
+	}
+	return true
 }
 
 // Store handles POST /api/apikey — validates, encrypts, and stores the API key.
@@ -50,10 +75,15 @@ func (h *APIKeyHandler) Store(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		APIKey string `json:"apiKey"`
+		APIKey     string `json:"apiKey"`
+		FamilyCode string `json:"familyCode"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Ogiltigt JSON-format"})
+		return
+	}
+
+	if !h.checkFamilyCode(w, r, req.FamilyCode) {
 		return
 	}
 
@@ -120,10 +150,15 @@ func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		APIKey string `json:"apiKey"`
+		APIKey     string `json:"apiKey"`
+		FamilyCode string `json:"familyCode"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Ogiltigt JSON-format"})
+		return
+	}
+
+	if !h.checkFamilyCode(w, r, req.FamilyCode) {
 		return
 	}
 
@@ -155,6 +190,17 @@ func (h *APIKeyHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *APIKeyHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	parentID, ok := h.parentUUID(w, r)
 	if !ok {
+		return
+	}
+
+	var req struct {
+		FamilyCode string `json:"familyCode"`
+	}
+	// Body is optional for Delete; ignore decode errors (e.g. empty body) and
+	// treat them as an empty family code.
+	_ = json.NewDecoder(r.Body).Decode(&req)
+
+	if !h.checkFamilyCode(w, r, req.FamilyCode) {
 		return
 	}
 

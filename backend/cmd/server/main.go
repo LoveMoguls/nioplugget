@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -21,6 +23,7 @@ import (
 	"github.com/trollstaven/nioplugget/backend/internal/content"
 	"github.com/trollstaven/nioplugget/backend/internal/database"
 	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
+	"github.com/trollstaven/nioplugget/backend/internal/device"
 	appMiddleware "github.com/trollstaven/nioplugget/backend/internal/middleware"
 	"github.com/trollstaven/nioplugget/backend/internal/progress"
 	"github.com/trollstaven/nioplugget/backend/internal/srs"
@@ -60,6 +63,10 @@ func main() {
 	// Initialize auth handler
 	authHandler := auth.NewAuthHandler(q, tokenAuth)
 
+	// Initialize device store (family settings, parents, students) — also used by apikey's
+	// family-code verifier below and reused for device/profile endpoints (see Task 6).
+	deviceStore := device.NewQueriesStore(q)
+
 	// Initialize API key handler
 	encSvc, err := apikey.NewEncryptionService(encryptionKey)
 	if err != nil {
@@ -67,6 +74,22 @@ func main() {
 	}
 	apiKeyStore := apikey.NewQueriesStore(q)
 	apiKeyHandler := apikey.NewAPIKeyHandler(apiKeyStore, encSvc, "")
+
+	// Wire the family-code verifier: no family code set (ErrNoRows) means no requirement;
+	// any other DB error fails closed (requirement on, verification failed) rather than
+	// silently allowing the request through.
+	familyCodeVerifier := func(ctx context.Context, code string) (bool, bool) {
+		settings, err := deviceStore.GetFamilySettings(ctx)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return false, false // no code set — no requirement
+			}
+			return true, false // unknown DB error — fail closed
+		}
+		match, err := auth.ComparePassword(settings.CodeHash, code)
+		return true, err == nil && match
+	}
+	apiKeyHandler.SetFamilyCodeVerifier(familyCodeVerifier)
 
 	// Initialize child handler
 	childStore := child.NewQueriesStore(q, pool)

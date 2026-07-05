@@ -2,6 +2,7 @@ package apikey_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
@@ -238,6 +239,129 @@ func TestHandler_Delete(t *testing.T) {
 	json.NewDecoder(rr.Body).Decode(&resp)
 	if resp["message"] == "" {
 		t.Fatal("expected message in delete response")
+	}
+}
+
+// --- Family-code enforcement helpers ---
+
+// doStoreRequest performs an authenticated POST /api/apikey request with the given body.
+func doStoreRequest(t *testing.T, h *apikey.APIKeyHandler, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPost, "/api/apikey", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = injectParentContext(req, testParentID)
+	rr := httptest.NewRecorder()
+	h.Store(rr, req)
+	return rr
+}
+
+// doUpdateRequest performs an authenticated PUT /api/apikey request with the given body.
+func doUpdateRequest(t *testing.T, h *apikey.APIKeyHandler, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPut, "/api/apikey", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	req = injectParentContext(req, testParentID)
+	rr := httptest.NewRecorder()
+	h.Update(rr, req)
+	return rr
+}
+
+// doDeleteRequest performs an authenticated DELETE /api/apikey request with the given (optional) body.
+func doDeleteRequest(t *testing.T, h *apikey.APIKeyHandler, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	var req *http.Request
+	if body == "" {
+		req = httptest.NewRequest(http.MethodDelete, "/api/apikey", nil)
+	} else {
+		req = httptest.NewRequest(http.MethodDelete, "/api/apikey", bytes.NewBufferString(body))
+		req.Header.Set("Content-Type", "application/json")
+	}
+	req = injectParentContext(req, testParentID)
+	rr := httptest.NewRecorder()
+	h.Delete(rr, req)
+	return rr
+}
+
+const testValidKey = "sk-ant-api03-testvalidkey123456789012"
+
+func TestStoreRequiresFamilyCodeWhenSet(t *testing.T) {
+	mock := newAnthropicMock(http.StatusOK)
+	defer mock.Close()
+
+	store := &mockStore{upsertFn: defaultUpsert}
+	h := newTestHandler(t, store, mock.URL+"/v1/models")
+	h.SetFamilyCodeVerifier(func(_ context.Context, code string) (bool, bool) {
+		return true, code == "hemlig1"
+	})
+
+	// utan kod → 403
+	rr := doStoreRequest(t, h, `{"apiKey":"`+testValidKey+`"}`)
+	if rr.Code != http.StatusForbidden {
+		t.Fatalf("status %d, want 403: %s", rr.Code, rr.Body.String())
+	}
+	// med rätt kod → som tidigare (201)
+	rr = doStoreRequest(t, h, `{"apiKey":"`+testValidKey+`","familyCode":"hemlig1"}`)
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestStoreNoVerifierUnchanged(t *testing.T) {
+	mock := newAnthropicMock(http.StatusOK)
+	defer mock.Close()
+
+	store := &mockStore{upsertFn: defaultUpsert}
+	h := newTestHandler(t, store, mock.URL+"/v1/models")
+
+	rr := doStoreRequest(t, h, `{"apiKey":"`+testValidKey+`"}`)
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestUpdateRequiresFamilyCodeWhenSet(t *testing.T) {
+	mock := newAnthropicMock(http.StatusOK)
+	defer mock.Close()
+
+	store := &mockStore{upsertFn: defaultUpsert}
+	h := newTestHandler(t, store, mock.URL+"/v1/models")
+	h.SetFamilyCodeVerifier(func(_ context.Context, code string) (bool, bool) {
+		return true, code == "hemlig1"
+	})
+
+	rr := doUpdateRequest(t, h, `{"apiKey":"`+testValidKey+`"}`)
+	if rr.Code != http.StatusForbidden {
+		t.Fatalf("status %d, want 403: %s", rr.Code, rr.Body.String())
+	}
+	rr = doUpdateRequest(t, h, `{"apiKey":"`+testValidKey+`","familyCode":"hemlig1"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestDeleteRequiresFamilyCodeWhenSet(t *testing.T) {
+	store := &mockStore{
+		deleteFn: func(parentID pgtype.UUID) error { return nil },
+	}
+	h := newTestHandler(t, store, "")
+	h.SetFamilyCodeVerifier(func(_ context.Context, code string) (bool, bool) {
+		return true, code == "hemlig1"
+	})
+
+	// no body at all → treated as empty code → 403
+	rr := doDeleteRequest(t, h, "")
+	if rr.Code != http.StatusForbidden {
+		t.Fatalf("status %d, want 403: %s", rr.Code, rr.Body.String())
+	}
+	// wrong code → 403
+	rr = doDeleteRequest(t, h, `{"familyCode":"fel"}`)
+	if rr.Code != http.StatusForbidden {
+		t.Fatalf("status %d, want 403: %s", rr.Code, rr.Body.String())
+	}
+	// correct code → 200
+	rr = doDeleteRequest(t, h, `{"familyCode":"hemlig1"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status %d: %s", rr.Code, rr.Body.String())
 	}
 }
 
