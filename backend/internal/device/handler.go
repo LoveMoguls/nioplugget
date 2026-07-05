@@ -2,9 +2,11 @@ package device
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/child"
@@ -198,12 +200,20 @@ func (h *Handler) SetCode(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Koden måste vara minst 6 tecken"})
 		return
 	}
-	if settings, err := h.store.GetFamilySettings(r.Context()); err == nil {
-		match, err := auth.ComparePassword(settings.CodeHash, req.CurrentCode)
-		if err != nil || !match {
+	settings, err := h.store.GetFamilySettings(r.Context())
+	switch {
+	case err == nil:
+		match, cmpErr := auth.ComparePassword(settings.CodeHash, req.CurrentCode)
+		if cmpErr != nil || !match {
 			writeJSON(w, http.StatusForbidden, map[string]string{"error": "Fel nuvarande familjekod"})
 			return
 		}
+	case errors.Is(err, pgx.ErrNoRows):
+		// first-time setup — no current code required
+	default:
+		log.Error().Err(err).Msg("failed to load family settings")
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internt fel"})
+		return
 	}
 	hash, err := auth.HashPassword(req.NewCode)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/child"
@@ -17,15 +18,19 @@ import (
 
 type fakeStore struct {
 	Store // panics on unimplemented
-	settings *queries.FamilySetting
-	upserted string
-	parents  []queries.ListParentsRow
-	students []queries.ListAllStudentsRow
+	settings    *queries.FamilySetting
+	settingsErr error // returned by GetFamilySettings when set
+	upserted    string
+	parents     []queries.ListParentsRow
+	students    []queries.ListAllStudentsRow
 }
 
 func (f *fakeStore) GetFamilySettings(_ context.Context) (queries.FamilySetting, error) {
+	if f.settingsErr != nil {
+		return queries.FamilySetting{}, f.settingsErr
+	}
 	if f.settings == nil {
-		return queries.FamilySetting{}, errors.New("no rows")
+		return queries.FamilySetting{}, pgx.ErrNoRows
 	}
 	return *f.settings, nil
 }
@@ -212,6 +217,20 @@ func TestSetCodeChangeRequiresCurrent(t *testing.T) {
 	}
 	if store.settings.DeviceEpoch != 2 {
 		t.Errorf("epoch %d, want 2 (bumped)", store.settings.DeviceEpoch)
+	}
+}
+
+func TestSetCodeDBErrorReturns500(t *testing.T) {
+	store := &fakeStore{settingsErr: errors.New("connection refused")}
+	h := newTestHandler(store)
+	rr := httptest.NewRecorder()
+	h.SetCode(rr, httptest.NewRequest(http.MethodPost, "/api/device/set-code",
+		strings.NewReader(`{"newCode":"hemlig1"}`)))
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d, want 500 on DB error", rr.Code)
+	}
+	if store.upserted != "" {
+		t.Error("code must not be upserted when settings lookup fails")
 	}
 }
 
