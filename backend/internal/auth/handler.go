@@ -62,9 +62,9 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	json.NewEncoder(w).Encode(v) //nolint:errcheck
 }
 
-// isSecureCookie is the single source of truth for the auth cookie's Secure
-// flag: on unless explicitly disabled for local HTTP development.
-func isSecureCookie() bool {
+// IsSecureCookie is the single source of truth for auth/device cookies'
+// Secure flag: on unless explicitly disabled for local HTTP development.
+func IsSecureCookie() bool {
 	return os.Getenv("COOKIE_SECURE") != "false" && os.Getenv("APP_ENV") != "development"
 }
 
@@ -75,7 +75,7 @@ func SetAuthCookie(w http.ResponseWriter, tokenStr string, expiry time.Time) {
 		Name:     "jwt",
 		Value:    tokenStr,
 		HttpOnly: true,
-		Secure:   isSecureCookie(),
+		Secure:   IsSecureCookie(),
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 		MaxAge:   86400,
@@ -89,7 +89,7 @@ func ClearAuthCookie(w http.ResponseWriter) {
 		Name:     "jwt",
 		Value:    "",
 		HttpOnly: true,
-		Secure:   isSecureCookie(),
+		Secure:   IsSecureCookie(),
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 		MaxAge:   -1,
