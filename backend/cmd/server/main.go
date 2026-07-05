@@ -91,6 +91,10 @@ func main() {
 	}
 	apiKeyHandler.SetFamilyCodeVerifier(familyCodeVerifier)
 
+	// Device unlock + profile picker
+	deviceLimiter := child.NewPINRateLimiter(5, 15*time.Minute)
+	deviceHandler := device.NewHandler(deviceStore, deviceLimiter)
+
 	// Initialize child handler
 	childStore := child.NewQueriesStore(q, pool)
 	childRateLimiter := child.NewPINRateLimiter(5, 15*time.Minute)
@@ -157,6 +161,21 @@ func main() {
 			r.Post("/logout", authHandler.Logout)
 		})
 	})
+
+	// Device trust routes (public unlock; profiles gated by device cookie inside handlers)
+	r.Route("/api/device", func(r chi.Router) {
+		r.Post("/unlock", deviceHandler.Unlock)
+
+		// Parent-only: set/change the family code
+		r.Group(func(r chi.Router) {
+			r.Use(jwtauth.Verifier(tokenAuth))
+			r.Use(jwtauth.Authenticator(tokenAuth))
+			r.Use(auth.ParentOnly)
+			r.Post("/set-code", deviceHandler.SetCode)
+		})
+	})
+	r.Get("/api/profiles", deviceHandler.Profiles)
+	r.Post("/api/profile/login", deviceHandler.ProfileLogin)
 
 	// API key routes (protected: parent JWT required)
 	r.Route("/api/apikey", func(r chi.Router) {
