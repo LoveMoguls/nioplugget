@@ -153,6 +153,24 @@ export const telegram = {
 		}>,
 };
 
+// Device / family profiles
+export const device = {
+	unlock: (code: string) =>
+		apiFetch('/api/device/unlock', { method: 'POST', body: JSON.stringify({ code }) }),
+	profiles: () =>
+		apiFetch('/api/profiles') as Promise<{ id: string; name: string; role: 'parent' | 'child' }[]>,
+	profileLogin: (id: string, role: 'parent' | 'child') =>
+		apiFetch('/api/profile/login', { method: 'POST', body: JSON.stringify({ id, role }) }) as Promise<{
+			role: string;
+			name: string;
+		}>,
+	setCode: (newCode: string, currentCode?: string) =>
+		apiFetch('/api/device/set-code', {
+			method: 'POST',
+			body: JSON.stringify({ newCode, currentCode }),
+		}),
+};
+
 // Child auth
 export const childAuth = {
 	names: (parentEmail: string) =>
