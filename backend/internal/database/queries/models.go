@@ -48,6 +48,13 @@ type Exercise struct {
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
+type FamilySetting struct {
+	ID          int16              `json:"id"`
+	CodeHash    string             `json:"code_hash"`
+	DeviceEpoch int32              `json:"device_epoch"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Message struct {
 	ID        pgtype.UUID        `json:"id"`
 	SessionID pgtype.UUID        `json:"session_id"`
