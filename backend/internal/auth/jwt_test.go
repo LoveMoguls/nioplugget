@@ -68,10 +68,22 @@ func TestJWT_TokenContainsClaims(t *testing.T) {
 	if !expOk || exp.IsZero() {
 		t.Error("expected non-zero exp claim")
 	}
-	// Expiry should be approximately 24 hours from now
+	// Expiry should be approximately 30 days from now
 	diff := expiry.Sub(time.Now())
-	if diff < 23*time.Hour || diff > 25*time.Hour {
-		t.Errorf("expected expiry ~24h from now, got %v", diff)
+	if diff < 30*24*time.Hour-time.Hour || diff > 30*24*time.Hour+time.Hour {
+		t.Errorf("expected expiry ~30 days from now, got %v", diff)
+	}
+}
+
+func TestGenerateTokenExpiry30Days(t *testing.T) {
+	auth.NewTokenAuth("test-secret")
+	_, expiry, err := auth.GenerateToken("user-1", "parent")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := time.Now().Add(30 * 24 * time.Hour)
+	if diff := expiry.Sub(want); diff < -time.Minute || diff > time.Minute {
+		t.Errorf("expiry %v, want ~%v", expiry, want)
 	}
 }
 

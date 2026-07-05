@@ -17,10 +17,10 @@ func NewTokenAuth(secret string) *jwtauth.JWTAuth {
 }
 
 // GenerateToken creates a JWT with sub, role, and exp claims.
-// Expiry is set to 24 hours from now.
+// Expiry is set to 30 days from now.
 // Returns the token string, the expiry time, and any error.
 func GenerateToken(userID string, role string) (string, time.Time, error) {
-	expiry := time.Now().Add(24 * time.Hour)
+	expiry := time.Now().Add(30 * 24 * time.Hour)
 	claims := map[string]any{
 		"sub":  userID,
 		"role": role,

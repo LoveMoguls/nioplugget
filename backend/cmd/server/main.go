@@ -131,12 +131,7 @@ func main() {
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(jwtauth.Authenticator(tokenAuth))
 			r.Get("/me", authHandler.Me)
-
-			// Parent-only
-			r.Group(func(r chi.Router) {
-				r.Use(auth.ParentOnly)
-				r.Post("/logout", authHandler.Logout)
-			})
+			r.Post("/logout", authHandler.Logout)
 		})
 	})
 
