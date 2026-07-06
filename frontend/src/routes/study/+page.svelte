@@ -6,7 +6,7 @@
 	import { content, reviews, challenges, telegram, type ApiError } from '$lib/api';
 	import { user, isChild } from '$lib/stores/auth';
 	import ChallengeUpload from '$lib/components/challenges/ChallengeUpload.svelte';
-	import { XPBar, GlowCard } from '$lib/components/arcade';
+	import { GlowCard } from '$lib/components/arcade';
 
 	const LIME_GRADIENT = 'linear-gradient(135deg, oklch(0.85 0.22 135), oklch(0.85 0.15 195))';
 
@@ -185,9 +185,13 @@
 	</div>
 
 	<div class="mb-8 rounded-xl border border-border bg-card p-5">
-		<h2 class="font-display mb-2 text-lg font-bold text-foreground">🏆 Utmaningar</h2>
-		<div class="mb-4 max-w-xs">
-			<XPBar current={Math.min(challengeList.length, 5)} max={5} label="Utmaningar klara" />
+		<div class="mb-4 flex flex-wrap items-center gap-3">
+			<h2 class="font-display text-lg font-bold text-foreground">Utmaningar</h2>
+			<span
+				class="font-display inline-flex items-center rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-sm font-bold text-gold"
+			>
+				🏆 {challengeList.length} utmaningar
+			</span>
 		</div>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{#each challengeList as challenge}
@@ -243,7 +247,7 @@
 					<GlowCard gradient={subjectGradient(subject.slug)}>
 						<div class="relative -m-5 overflow-hidden rounded-[calc(1rem+4px)] p-5">
 							<div
-								class="pointer-events-none absolute inset-0 opacity-60"
+								class="pointer-events-none absolute inset-0 opacity-30"
 								style="background: {subjectGradient(subject.slug)};"
 							></div>
 							<div class="relative z-10">
