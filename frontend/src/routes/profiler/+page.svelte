@@ -59,7 +59,9 @@
 </svelte:head>
 
 <div class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 py-12">
-	<h1 class="mb-8 text-2xl font-bold text-foreground sm:text-3xl">Vem pluggar?</h1>
+	<h1 class="font-display mb-10 text-4xl font-extrabold tracking-wider text-primary uppercase">
+		Vem pluggar?
+	</h1>
 
 	{#if errorMsg}
 		<p class="mb-6 text-sm text-destructive">{errorMsg}</p>
@@ -68,23 +70,61 @@
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else}
-		<div class="flex flex-wrap items-start justify-center gap-6">
+		<div
+			class="mx-auto grid w-full max-w-md grid-cols-2 place-items-center gap-6 sm:max-w-lg sm:grid-cols-3 md:max-w-2xl md:grid-cols-4"
+		>
 			{#each profiles as profile (profile.id)}
 				<button
 					type="button"
 					onclick={() => selectProfile(profile)}
 					disabled={selectingId !== ''}
-					class="flex w-24 flex-col items-center gap-2 rounded-lg p-2 text-center hover:bg-muted/50 disabled:opacity-50"
+					class="group flex w-24 flex-col items-center gap-2 rounded-lg p-2 text-center disabled:opacity-50"
 				>
-					<span
-						class="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white"
-						style="background-color: {avatarColor(profile.name)}"
+					<div
+						class="avatar-ring rounded-full p-[3px] transition-transform duration-200 group-hover:scale-[1.08] group-hover:[box-shadow:var(--glow-cyan)] group-focus-visible:scale-[1.08] group-focus-visible:[box-shadow:var(--glow-cyan)]"
 					>
-						{profile.name.charAt(0).toUpperCase()}
-					</span>
-					<span class="text-sm font-medium text-foreground">{profile.name}</span>
+						<div class="rounded-full bg-card p-[3px]">
+							<span
+								class="flex h-24 w-24 items-center justify-center rounded-full text-2xl font-bold text-white"
+								style="background-color: {avatarColor(profile.name)}"
+							>
+								{profile.name.charAt(0).toUpperCase()}
+							</span>
+						</div>
+					</div>
+					<span class="font-display text-sm font-bold text-foreground">{profile.name}</span>
 				</button>
 			{/each}
 		</div>
 	{/if}
 </div>
+
+<style>
+	.avatar-ring {
+		background: conic-gradient(
+			from var(--ring-angle, 0deg),
+			oklch(0.85 0.15 195),
+			oklch(0.7 0.25 330),
+			oklch(0.85 0.22 135),
+			oklch(0.85 0.15 195)
+		);
+	}
+
+	@property --ring-angle {
+		syntax: '<angle>';
+		initial-value: 0deg;
+		inherits: false;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.avatar-ring {
+			animation: spin-ring 6s linear infinite;
+		}
+
+		@keyframes spin-ring {
+			to {
+				--ring-angle: 360deg;
+			}
+		}
+	}
+</style>
