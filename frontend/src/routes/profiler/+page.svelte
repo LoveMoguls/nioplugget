@@ -27,7 +27,7 @@
 		} catch (err: unknown) {
 			const e = err as { status?: number };
 			if (e.status === 401) {
-				goto('/las-upp');
+				goto('/las-upp', { replaceState: true });
 				return;
 			}
 			errorMsg = getErrorMessage(err, 'Kunde inte hämta profiler.');
@@ -43,6 +43,10 @@
 			const data = await device.profileLogin(profile.id, profile.role);
 			goto(data.role === 'parent' ? '/dashboard' : '/study');
 		} catch (err) {
+			if ((err as { status?: number })?.status === 401) {
+				goto('/las-upp');
+				return;
+			}
 			errorMsg = getErrorMessage(err, 'Kunde inte logga in. Försök igen.');
 		} finally {
 			selectingId = '';
