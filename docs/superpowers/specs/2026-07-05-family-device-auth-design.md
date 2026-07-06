@@ -99,6 +99,14 @@ omöjlig tills föräldern satt koden (bootstrap via lösenordslogin).
 - Kvarvarande risk (accepterad): den som kan familjekoden och URL:en
   kommer in som vilken profil som helst. Familjeintern tjänst; koden är
   bytbar och utkastning global.
+- Profilvalda sessioner (via profilväljaren på en betrodd enhet)
+  epoch-stämplas vid inloggning och kastas ut omedelbart vid kodbyte
+  (epoch-bump). Lösenordsinloggade sessioner (bootstrap via `/login`)
+  saknar epoch-claim och påverkas medvetet inte av kodbyten.
+- `CF-Connecting-IP` litas på för rate limit-nyckeln (unlock-endpointen).
+  Vid direktåtkomst på det lokala nätverket (utan Cloudflare-tunneln
+  emellan) kan headern förfalskas av klienten. Accepterad risk för en
+  familjeintern tjänst på LAN.
 
 ## Testning
 
