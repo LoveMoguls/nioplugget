@@ -183,6 +183,38 @@ func TestHandler_Login_ValidCredentials_Returns200(t *testing.T) {
 	}
 }
 
+func TestHandler_Login_SetsCookieWithThirtyDayMaxAge(t *testing.T) {
+	parent := fakeParent("test@example.com", "securepassword")
+	mock := &mockQueries{
+		getParentByEmailFn: func(ctx context.Context, email string) (queries.Parent, error) {
+			return parent, nil
+		},
+	}
+	h := setupHandler(mock)
+
+	rr := doRequest(http.HandlerFunc(h.Login), "POST", "/api/auth/login", map[string]any{
+		"email":    "test@example.com",
+		"password": "securepassword",
+	})
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
+	}
+	var jwtCookie *http.Cookie
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "jwt" {
+			jwtCookie = c
+		}
+	}
+	if jwtCookie == nil {
+		t.Fatal("expected jwt cookie to be set")
+	}
+	const twentyNineDaysInSeconds = 29 * 24 * 60 * 60
+	if jwtCookie.MaxAge < twentyNineDaysInSeconds {
+		t.Errorf("MaxAge = %d, want >= %d (~30 days)", jwtCookie.MaxAge, twentyNineDaysInSeconds)
+	}
+}
+
 func TestHandler_Login_WrongPassword_Returns401(t *testing.T) {
 	parent := fakeParent("test@example.com", "correctpassword")
 	mock := &mockQueries{

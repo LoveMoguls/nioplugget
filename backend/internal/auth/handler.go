@@ -78,7 +78,7 @@ func SetAuthCookie(w http.ResponseWriter, tokenStr string, expiry time.Time) {
 		Secure:   IsSecureCookie(),
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
-		MaxAge:   86400,
+		MaxAge:   int(time.Until(expiry).Seconds()),
 		Expires:  expiry,
 	})
 }
