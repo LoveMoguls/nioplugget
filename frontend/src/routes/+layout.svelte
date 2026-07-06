@@ -23,18 +23,18 @@
 
 <div class="min-h-screen bg-background font-sans antialiased">
 	{#if $isLoggedIn}
-		<nav class="relative bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
+		<nav class="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-md" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
 			<div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-				<a href="/" class="text-lg font-semibold text-white tracking-wide">Nioplugget</a>
+				<a href="/" class="font-display text-xl font-bold tracking-wide text-primary">Nioplugget</a>
 
 				<!-- Desktop nav -->
 				<div class="hidden items-center gap-4 md:flex">
 					{#if $isParent}
-						<a href="/dashboard" class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white">
+						<a href="/dashboard" class="min-h-[44px] flex items-center text-sm text-foreground/80 hover:text-foreground">
 							Dashboard
 						</a>
 					{:else}
-						<a href="/study" class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white">
+						<a href="/study" class="min-h-[44px] flex items-center text-sm text-foreground/80 hover:text-foreground">
 							Plugga
 						</a>
 					{/if}
@@ -43,7 +43,7 @@
 							await user.logout();
 							goto('/profiler');
 						}}
-						class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white"
+						class="min-h-[44px] flex items-center rounded-lg border border-input bg-input/30 px-3 text-sm text-foreground/80 hover:bg-input/50 hover:text-foreground"
 					>
 						Byt profil
 					</button>
@@ -51,7 +51,7 @@
 
 				<!-- Mobile hamburger -->
 				<button
-					class="flex min-h-[44px] min-w-[44px] items-center justify-center text-white md:hidden"
+					class="flex min-h-[44px] min-w-[44px] items-center justify-center text-foreground md:hidden"
 					onclick={() => (menuOpen = !menuOpen)}
 					aria-expanded={menuOpen}
 					aria-label="Meny"
@@ -66,19 +66,19 @@
 
 			<!-- Mobile menu overlay -->
 			{#if menuOpen}
-				<div class="border-t border-white/20 bg-indigo-700 px-4 pb-4 md:hidden" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
+				<div class="border-t border-border/50 bg-background/95 px-4 pb-4 backdrop-blur-md md:hidden" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
 					<div class="mx-auto flex max-w-4xl flex-col">
 						{#if $isParent}
 							<a
 								href="/dashboard"
-								class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
+								class="flex min-h-[44px] items-center text-sm text-foreground/80 hover:text-foreground"
 							>
 								Dashboard
 							</a>
 						{:else}
 							<a
 								href="/study"
-								class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
+								class="flex min-h-[44px] items-center text-sm text-foreground/80 hover:text-foreground"
 							>
 								Plugga
 							</a>
@@ -89,7 +89,7 @@
 								await user.logout();
 								goto('/profiler');
 							}}
-							class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
+							class="flex min-h-[44px] items-center text-sm text-foreground/80 hover:text-foreground"
 						>
 							Byt profil
 						</button>
