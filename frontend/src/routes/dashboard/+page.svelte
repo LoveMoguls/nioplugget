@@ -76,7 +76,7 @@
 	onMount(async () => {
 		await user.checkAuth();
 		if (!$isLoggedIn || !$isParent) {
-			goto('/login');
+			goto('/profiler');
 			return;
 		}
 		await loadData();
