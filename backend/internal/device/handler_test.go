@@ -192,6 +192,13 @@ func TestProfileLoginSetsJWT(t *testing.T) {
 	if role != "child" {
 		t.Errorf("role %v", role)
 	}
+	var epoch float64
+	if err := tok.Get("epoch", &epoch); err != nil {
+		t.Fatalf("expected epoch claim on profile-login session token: %v", err)
+	}
+	if int32(epoch) != 1 {
+		t.Errorf("epoch %v, want 1", epoch)
+	}
 }
 
 func TestProfileLoginUnknownID(t *testing.T) {

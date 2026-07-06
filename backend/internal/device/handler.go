@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
 	"github.com/trollstaven/nioplugget/backend/internal/child"
+	"github.com/trollstaven/nioplugget/backend/internal/database/queries"
 )
 
 // Handler serves device unlock and profile endpoints.
@@ -78,34 +79,36 @@ func (h *Handler) Unlock(w http.ResponseWriter, r *http.Request) {
 }
 
 // requireDevice validates the device cookie: parses the JWT, checks role
-// "device" and that the epoch matches the current family settings.
-func (h *Handler) requireDevice(w http.ResponseWriter, r *http.Request) bool {
+// "device" and that the epoch matches the current family settings. Returns
+// the loaded family settings so callers (e.g. ProfileLogin) can reuse them
+// without a second DB round trip.
+func (h *Handler) requireDevice(w http.ResponseWriter, r *http.Request) (queries.FamilySetting, bool) {
 	tokenStr := TokenFromDeviceCookie(r)
 	if tokenStr == "" {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
-		return false
+		return queries.FamilySetting{}, false
 	}
 	tok, err := jwtauth.VerifyToken(auth.TokenAuth, tokenStr)
 	if err != nil {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
-		return false
+		return queries.FamilySetting{}, false
 	}
 	var role string
 	if err := tok.Get("role", &role); err != nil || role != "device" {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
-		return false
+		return queries.FamilySetting{}, false
 	}
 	var epoch float64
 	if err := tok.Get("epoch", &epoch); err != nil {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
-		return false
+		return queries.FamilySetting{}, false
 	}
 	settings, err := h.store.GetFamilySettings(r.Context())
 	if err != nil || int32(epoch) != settings.DeviceEpoch {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
-		return false
+		return queries.FamilySetting{}, false
 	}
-	return true
+	return settings, true
 }
 
 type profileResponse struct {
@@ -116,7 +119,7 @@ type profileResponse struct {
 
 // Profiles handles GET /api/profiles (trusted devices only).
 func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
-	if !h.requireDevice(w, r) {
+	if _, ok := h.requireDevice(w, r); !ok {
 		return
 	}
 	parents, err := h.store.ListParents(r.Context())
@@ -147,7 +150,8 @@ func (h *Handler) Profiles(w http.ResponseWriter, r *http.Request) {
 
 // ProfileLogin handles POST /api/profile/login (trusted devices only).
 func (h *Handler) ProfileLogin(w http.ResponseWriter, r *http.Request) {
-	if !h.requireDevice(w, r) {
+	settings, ok := h.requireDevice(w, r)
+	if !ok {
 		return
 	}
 	var req struct {
@@ -175,7 +179,7 @@ func (h *Handler) ProfileLogin(w http.ResponseWriter, r *http.Request) {
 		}
 		name = s.Name
 	}
-	tokenStr, expiry, err := auth.GenerateToken(req.ID, req.Role)
+	tokenStr, expiry, err := generateProfileToken(req.ID, req.Role, settings.DeviceEpoch)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to generate token for profile login")
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internt fel"})

@@ -141,6 +141,10 @@ func main() {
 	r.Use(appMiddleware.RedactingLogger)
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(appMiddleware.CORS())
+	// Evicts profile-selected sessions whose epoch is stale (family code
+	// changed after the session was minted). Runs globally so it applies
+	// ahead of every route's own auth middleware.
+	r.Use(deviceHandler.EpochGuard)
 
 	// Health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
