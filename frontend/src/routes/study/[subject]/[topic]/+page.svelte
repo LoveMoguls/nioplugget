@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { Card, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { content, sessions } from '$lib/api';
 
@@ -54,8 +53,8 @@
 		}
 	}
 
-	function difficultyDots(level: number): string {
-		return '●'.repeat(level) + '○'.repeat(5 - level);
+	function difficultyStars(level: number): string {
+		return '⭐'.repeat(level);
 	}
 </script>
 
@@ -81,24 +80,24 @@
 	{:else}
 		<div class="space-y-4">
 			{#each exercises as exercise}
-				<Card class="hover:shadow-md">
-					<CardHeader class="flex flex-row items-center justify-between gap-4">
-						<div class="min-w-0 flex-1">
-							<CardTitle class="text-lg">{exercise.title}</CardTitle>
-							<CardDescription class="mt-1">{exercise.description}</CardDescription>
-							<p class="text-muted-foreground mt-2 text-xs tracking-wider">
-								{difficultyDots(exercise.difficultyOrder)}
-							</p>
-						</div>
-						<Button
-							onclick={() => startExercise(exercise.id)}
-							disabled={starting !== ''}
-							class="min-h-[44px] shrink-0"
-						>
-							{starting === exercise.id ? 'Startar...' : 'Starta övning'}
-						</Button>
-					</CardHeader>
-				</Card>
+				<div
+					class="flex flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-5"
+				>
+					<div class="min-w-0 flex-1">
+						<p class="font-display text-lg font-bold text-foreground">{exercise.title}</p>
+						<p class="mt-1 text-sm text-muted-foreground">{exercise.description}</p>
+						<p class="mt-2 text-xs tracking-wider text-gold">
+							{difficultyStars(exercise.difficultyOrder)}
+						</p>
+					</div>
+					<Button
+						onclick={() => startExercise(exercise.id)}
+						disabled={starting !== ''}
+						class="min-h-[44px] shrink-0"
+					>
+						{starting === exercise.id ? 'Startar...' : 'Starta övning'}
+					</Button>
+				</div>
 			{/each}
 		</div>
 	{/if}

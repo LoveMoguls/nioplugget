@@ -6,6 +6,37 @@
 	import { content, reviews, challenges, telegram, type ApiError } from '$lib/api';
 	import { user, isChild } from '$lib/stores/auth';
 	import ChallengeUpload from '$lib/components/challenges/ChallengeUpload.svelte';
+	import { XPBar, GlowCard } from '$lib/components/arcade';
+
+	const LIME_GRADIENT = 'linear-gradient(135deg, oklch(0.85 0.22 135), oklch(0.85 0.15 195))';
+
+	const SUBJECT_GRADIENTS: Record<string, string> = {
+		biologi: 'linear-gradient(135deg, oklch(0.35 0.10 155), oklch(0.25 0.06 200))',
+		samhalle: 'linear-gradient(135deg, oklch(0.35 0.10 265), oklch(0.25 0.08 310))',
+		samhallskunskap: 'linear-gradient(135deg, oklch(0.35 0.10 265), oklch(0.25 0.08 310))',
+		matematik: 'linear-gradient(135deg, oklch(0.35 0.12 25), oklch(0.28 0.08 330))',
+		matte: 'linear-gradient(135deg, oklch(0.35 0.12 25), oklch(0.28 0.08 330))'
+	};
+	const SUBJECT_FALLBACK_GRADIENT = 'linear-gradient(135deg, oklch(0.30 0.03 285), oklch(0.22 0.03 285))';
+
+	const SUBJECT_EMOJI: Record<string, string> = {
+		biologi: '🧬',
+		samhalle: '🏛️',
+		samhallskunskap: '🏛️',
+		matematik: '➗',
+		matte: '➗'
+	};
+	const SUBJECT_FALLBACK_EMOJI = '📚';
+
+	function subjectGradient(slug: string): string {
+		return SUBJECT_GRADIENTS[slug] ?? SUBJECT_FALLBACK_GRADIENT;
+	}
+
+	function subjectEmoji(slug: string): string {
+		return SUBJECT_EMOJI[slug] ?? SUBJECT_FALLBACK_EMOJI;
+	}
+
+	const childName = $derived(($user as { name?: string } | null)?.name);
 
 	interface Subject {
 		id: string;
@@ -93,7 +124,9 @@
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-2xl font-bold">Välj ämne</h1>
+		<h1 class="font-display text-2xl font-bold text-foreground sm:text-3xl">
+			{childName ? `HEJ ${childName.toUpperCase()}!` : 'DAGS ATT PLUGGA!'}
+		</h1>
 		<a
 			href="/progress"
 			class="flex min-h-[44px] items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -109,27 +142,31 @@
 	{:else}
 		{#if dueReviews.length > 0}
 			<div class="mb-8">
-				<h2 class="mb-4 text-xl font-semibold">Dags att repetera</h2>
-				<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-					{#each dueReviews as review}
-						<a
-							href="/study/{review.subjectSlug}/{review.topicSlug}?exercise={review.exerciseId}"
-							class="block"
-						>
-							<Card class="border-accent bg-accent/30 transition-shadow hover:shadow-md">
-								<CardHeader class="pb-3">
-									<CardTitle class="text-base">{review.exerciseTitle}</CardTitle>
-									<CardDescription>
+				<GlowCard gradient={LIME_GRADIENT}>
+					<h2 class="font-display mb-4 text-lg font-bold tracking-wide text-foreground uppercase">
+						⚡ Dagens uppdrag
+					</h2>
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+						{#each dueReviews as review}
+							<a
+								href="/study/{review.subjectSlug}/{review.topicSlug}?exercise={review.exerciseId}"
+								class="block"
+							>
+								<div
+									class="h-full rounded-lg border border-border bg-secondary/40 p-4 transition-colors hover:bg-secondary/70"
+								>
+									<p class="font-display font-bold text-foreground">{review.exerciseTitle}</p>
+									<p class="mt-1 text-sm text-muted-foreground">
 										{review.subjectName} · {review.topicName}
-										<span class="mt-1 block font-medium text-primary">
-											{review.daysOverdue === 0 ? 'Dags idag' : `${review.daysOverdue} dagar sedan`}
-										</span>
-									</CardDescription>
-								</CardHeader>
-							</Card>
-						</a>
-					{/each}
-				</div>
+									</p>
+									<span class="mt-2 block text-sm font-semibold text-success">
+										{review.daysOverdue === 0 ? 'Dags idag' : `${review.daysOverdue} dagar sedan`}
+									</span>
+								</div>
+							</a>
+						{/each}
+					</div>
+				</GlowCard>
 			</div>
 		{/if}
 
@@ -147,21 +184,22 @@
 		</div>
 	</div>
 
-	<div class="mb-8">
-		<h2 class="mb-4 text-xl font-semibold">Utmaningar</h2>
+	<div class="mb-8 rounded-xl border border-border bg-card p-5">
+		<h2 class="font-display mb-2 text-lg font-bold text-foreground">🏆 Utmaningar</h2>
+		<div class="mb-4 max-w-xs">
+			<XPBar current={Math.min(challengeList.length, 5)} max={5} label="Utmaningar klara" />
+		</div>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{#each challengeList as challenge}
 				<a href="/challenges/{challenge.id}" class="block transition-transform hover:scale-[1.02]">
-					<Card class="h-full hover:shadow-md">
-						<CardHeader class="pb-3">
-							<div class="mb-1 text-2xl">{challenge.coverEmoji}</div>
-							<CardTitle class="text-base">{challenge.title}</CardTitle>
-							<CardDescription>{challenge.description}</CardDescription>
-							<p class="text-xs text-muted-foreground/80">
-								{challenge.createdBy} · {formatCreated(challenge.createdAt)}
-							</p>
-						</CardHeader>
-					</Card>
+					<div class="h-full rounded-lg border border-border bg-secondary/40 p-4 transition-colors hover:bg-secondary/70">
+						<div class="mb-1 text-2xl">{challenge.coverEmoji}</div>
+						<p class="font-display font-bold text-foreground">{challenge.title}</p>
+						<p class="mt-1 text-sm text-muted-foreground">{challenge.description}</p>
+						<p class="mt-2 text-xs text-muted-foreground/80">
+							{challenge.createdBy} · {formatCreated(challenge.createdAt)}
+						</p>
+					</div>
 				</a>
 			{/each}
 
@@ -172,7 +210,7 @@
 					class="flex h-full min-h-[120px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-border p-4 text-center transition-colors hover:border-primary/60 hover:bg-primary/5"
 				>
 					<span class="text-3xl">➕</span>
-					<span class="mt-1 text-sm font-medium">Skapa egen utmaning</span>
+					<span class="mt-1 text-sm font-medium text-foreground">Skapa egen utmaning</span>
 					<span class="mt-0.5 text-xs text-muted-foreground">Fota eller klistra in vilken läxa som helst</span>
 				</button>
 			{/if}
@@ -198,21 +236,31 @@
 		{/if}
 	</div>
 
-	<h2 class="mb-4 text-xl font-semibold">Ämnen</h2>
+	<h2 class="font-display mb-4 text-lg font-bold text-foreground">Ämnen</h2>
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-			{#each subjects as subject, i}
-				{@const gradients = ['from-violet-500 to-indigo-600','from-emerald-500 to-teal-600','from-orange-400 to-rose-500','from-sky-500 to-blue-600','from-pink-500 to-fuchsia-600']}
+			{#each subjects as subject}
 				<a href="/study/{subject.slug}" class="block transition-transform hover:scale-[1.02]">
-					<div class="h-full cursor-pointer rounded-xl bg-gradient-to-br {gradients[i % gradients.length]} p-5 text-white shadow-md hover:shadow-lg">
-						<p class="text-lg font-semibold">{subject.name}</p>
-						<p class="mt-1 text-sm text-white/75">Utforska övningar i {subject.name.toLowerCase()}</p>
-					</div>
+					<GlowCard gradient={subjectGradient(subject.slug)}>
+						<div class="relative -m-5 overflow-hidden rounded-[calc(1rem+4px)] p-5">
+							<div
+								class="pointer-events-none absolute inset-0 opacity-60"
+								style="background: {subjectGradient(subject.slug)};"
+							></div>
+							<div class="relative z-10">
+								<div class="text-3xl">{subjectEmoji(subject.slug)}</div>
+								<p class="font-display mt-2 text-lg font-bold text-foreground">{subject.name}</p>
+								<p class="mt-1 text-sm text-foreground/70">
+									Utforska övningar i {subject.name.toLowerCase()}
+								</p>
+							</div>
+						</div>
+					</GlowCard>
 				</a>
 			{/each}
 		</div>
 
 		{#if telegramAvailable}
-			<section class="mt-8">
+			<section class="mt-8 rounded-xl border border-border bg-card p-5">
 				{#if telegramLink}
 					<p>
 						<a href={telegramLink} target="_blank" rel="noopener" class="underline">

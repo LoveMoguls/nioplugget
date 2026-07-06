@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { Card, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { content } from '$lib/api';
 
 	interface Topic {
@@ -58,11 +57,9 @@
 					href="/study/{subjectSlug}/{topic.slug}"
 					class="block transition-transform hover:scale-[1.02]"
 				>
-					<Card class="h-full cursor-pointer hover:shadow-md">
-						<CardHeader>
-							<CardTitle>{topic.name}</CardTitle>
-						</CardHeader>
-					</Card>
+					<div class="h-full rounded-xl border border-border bg-card p-5 transition-colors hover:bg-secondary/40">
+						<p class="font-display text-lg font-bold text-foreground">{topic.name}</p>
+					</div>
 				</a>
 			{/each}
 		</div>
