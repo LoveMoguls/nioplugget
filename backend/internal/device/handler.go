@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/trollstaven/nioplugget/backend/internal/auth"
@@ -84,7 +85,7 @@ func (h *Handler) requireDevice(w http.ResponseWriter, r *http.Request) bool {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
 		return false
 	}
-	tok, err := auth.TokenAuth.Decode(tokenStr)
+	tok, err := jwtauth.VerifyToken(auth.TokenAuth, tokenStr)
 	if err != nil {
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Enheten är inte upplåst"})
 		return false

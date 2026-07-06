@@ -112,6 +112,26 @@ func TestProfilesRequiresDeviceCookie(t *testing.T) {
 	}
 }
 
+func TestProfilesRejectsExpiredDeviceToken(t *testing.T) {
+	h := newTestHandler(&fakeStore{settings: settingsWithCode(t, "hemlig1", 1)})
+	claims := map[string]any{
+		"role":  "device",
+		"epoch": int32(1),
+		"exp":   time.Now().Add(-time.Hour).Unix(),
+	}
+	_, tokenStr, err := auth.TokenAuth.Encode(claims)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest(http.MethodGet, "/api/profiles", nil)
+	r.AddCookie(&http.Cookie{Name: "device", Value: tokenStr})
+	rr := httptest.NewRecorder()
+	h.Profiles(rr, r)
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("status %d, want 401 on expired device token", rr.Code)
+	}
+}
+
 func TestProfilesRejectsStaleEpoch(t *testing.T) {
 	h := newTestHandler(&fakeStore{settings: settingsWithCode(t, "hemlig1", 5)})
 	rr := httptest.NewRecorder()
