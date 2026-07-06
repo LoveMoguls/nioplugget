@@ -58,7 +58,7 @@
 	});
 
 	function scoreColor(score: number): string {
-		if (score === 0) return 'bg-gray-200';
+		if (score === 0) return 'bg-muted';
 		if (score >= 4) return 'bg-emerald-200';
 		if (score >= 3) return 'bg-amber-200';
 		return 'bg-rose-200';
@@ -181,7 +181,7 @@
 							>
 								{topic.name}
 							</span>
-							<div class="h-4 flex-1 overflow-hidden rounded-full bg-gray-100">
+							<div class="h-4 flex-1 overflow-hidden rounded-full bg-muted">
 								{#if topic.avgScore > 0}
 									<div
 										class="{scoreColor(topic.avgScore)} h-full rounded-full transition-all"

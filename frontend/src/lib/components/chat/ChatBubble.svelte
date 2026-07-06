@@ -12,7 +12,7 @@
 		class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
 		{role === 'user'
 			? 'rounded-br-md bg-gradient-to-br from-violet-500 to-indigo-600 text-white'
-			: 'rounded-bl-md border border-border bg-white text-foreground dark:bg-card'}"
+			: 'rounded-bl-md border border-border bg-card text-foreground'}"
 	>
 		{#each content.split('\n') as line, i}
 			{#if i > 0}<br />{/if}

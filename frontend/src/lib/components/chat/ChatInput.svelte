@@ -38,7 +38,7 @@
 		{disabled}
 		placeholder="Skriv ditt svar..."
 		rows={1}
-		class="flex-1 resize-none rounded-xl border border-input bg-white px-4 py-3 text-sm
+		class="flex-1 resize-none rounded-xl border border-input bg-card px-4 py-3 text-sm
 			focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring
 			disabled:cursor-not-allowed disabled:opacity-50"
 	></textarea>
