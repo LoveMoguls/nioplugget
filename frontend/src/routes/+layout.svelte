@@ -11,24 +11,6 @@
 
 	onMount(() => {
 		user.checkAuth();
-
-		// Dark mode detection — system preference only, no manual toggle
-		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-		function applyTheme(e: MediaQueryList | MediaQueryListEvent) {
-			if (e.matches) {
-				document.documentElement.classList.add('dark');
-			} else {
-				document.documentElement.classList.remove('dark');
-			}
-		}
-
-		applyTheme(mediaQuery);
-		mediaQuery.addEventListener('change', applyTheme);
-
-		return () => {
-			mediaQuery.removeEventListener('change', applyTheme);
-		};
 	});
 
 	// Close menu on navigation
