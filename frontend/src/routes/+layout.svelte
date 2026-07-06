@@ -59,11 +59,11 @@
 					<button
 						onclick={async () => {
 							await user.logout();
-							goto('/');
+							goto('/profiler');
 						}}
 						class="min-h-[44px] flex items-center text-sm text-white/80 hover:text-white"
 					>
-						Logga ut
+						Byt profil
 					</button>
 				</div>
 
@@ -105,11 +105,11 @@
 							onclick={async () => {
 								menuOpen = false;
 								await user.logout();
-								goto('/');
+								goto('/profiler');
 							}}
 							class="flex min-h-[44px] items-center text-sm text-white/80 hover:text-white"
 						>
-							Logga ut
+							Byt profil
 						</button>
 					</div>
 				</div>

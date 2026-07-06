@@ -10,6 +10,7 @@
 	import { user, isLoggedIn, isParent } from '$lib/stores/auth';
 
 	let apiKeyInput = $state('');
+	let familyCodeInput = $state('');
 	let loading = $state(false);
 	let errorMsg = $state('');
 	let successMsg = $state('');
@@ -31,7 +32,7 @@
 		}
 		loading = true;
 		try {
-			await apiKeyApi.store(apiKeyInput.trim());
+			await apiKeyApi.store(apiKeyInput.trim(), familyCodeInput.trim() || undefined);
 			successMsg = 'API-nyckeln är sparad!';
 			setTimeout(() => goto('/dashboard'), 1500);
 		} catch (err) {
@@ -88,6 +89,17 @@
 					<p class="text-xs text-muted-foreground">
 						Nyckeln krypteras och lagras säkert. Den används enbart för att kommunicera med Claude.
 					</p>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<Label for="familycode">Familjekod</Label>
+					<Input
+						id="familycode"
+						type="password"
+						bind:value={familyCodeInput}
+						placeholder="Lämna tom om ingen kod är satt"
+						autocomplete="off"
+					/>
 				</div>
 
 				<Button type="submit" class="w-full" disabled={loading}>

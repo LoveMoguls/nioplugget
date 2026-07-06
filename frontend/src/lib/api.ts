@@ -60,11 +60,12 @@ export const auth = {
 // API Keys
 export const apiKey = {
 	get: () => apiFetch('/api/apikey'),
-	store: (key: string) =>
-		apiFetch('/api/apikey', { method: 'POST', body: JSON.stringify({ apiKey: key }) }),
-	update: (key: string) =>
-		apiFetch('/api/apikey', { method: 'PUT', body: JSON.stringify({ apiKey: key }) }),
-	delete: () => apiFetch('/api/apikey', { method: 'DELETE' }),
+	store: (key: string, familyCode?: string) =>
+		apiFetch('/api/apikey', { method: 'POST', body: JSON.stringify({ apiKey: key, familyCode }) }),
+	update: (key: string, familyCode?: string) =>
+		apiFetch('/api/apikey', { method: 'PUT', body: JSON.stringify({ apiKey: key, familyCode }) }),
+	delete: (familyCode?: string) =>
+		apiFetch('/api/apikey', { method: 'DELETE', body: JSON.stringify({ familyCode }) }),
 };
 
 // Children

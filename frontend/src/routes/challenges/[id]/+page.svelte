@@ -38,7 +38,7 @@
 	onMount(async () => {
 		await user.checkAuth();
 		if (!$isChild) {
-			goto('/child/login');
+			goto('/profiler');
 			return;
 		}
 		const id = ($page.params as Record<string, string>).id;

@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '$lib/components/ui/card';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
-	import { apiKey as apiKeyApi, children as childrenApi, challenges as challengesApi, getErrorMessage } from '$lib/api';
+	import { apiKey as apiKeyApi, children as childrenApi, challenges as challengesApi, device as deviceApi, getErrorMessage } from '$lib/api';
 	import { user, isLoggedIn, isParent } from '$lib/stores/auth';
 	import { browser } from '$app/environment';
 	import ChallengeUpload from '$lib/components/challenges/ChallengeUpload.svelte';
@@ -22,6 +22,15 @@
 	let apiKeyError = $state('');
 	let apiKeySuccess = $state('');
 	let showUpdateForm = $state(false);
+	let apiKeyFamilyCode = $state('');
+
+	// Family code state
+	let familyCodeNew = $state('');
+	let familyCodeConfirm = $state('');
+	let familyCodeCurrent = $state('');
+	let familyCodeLoading = $state(false);
+	let familyCodeError = $state('');
+	let familyCodeSuccess = $state('');
 
 	// Challenges state
 	interface ChallengeItem {
@@ -57,13 +66,11 @@
 		id: string;
 		name: string;
 		activated: boolean;
-		inviteToken?: string;
 	}
 	let childList = $state<Child[]>([]);
 	let newChildName = $state('');
 	let childLoading = $state(false);
 	let childError = $state('');
-	let inviteLinks = $state<Record<string, string>>({});
 
 	// Auth check on mount
 	onMount(async () => {
@@ -169,9 +176,10 @@
 		}
 		apiKeyLoading = true;
 		try {
-			const data = (await apiKeyApi.store(apiKeyInput.trim())) as { masked: string };
+			const data = (await apiKeyApi.store(apiKeyInput.trim(), apiKeyFamilyCode.trim() || undefined)) as { masked: string };
 			apiKeyData = { masked: data.masked, hasKey: true };
 			apiKeyInput = '';
+			apiKeyFamilyCode = '';
 			apiKeySuccess = 'API-nyckeln har sparats.';
 		} catch (err) {
 			apiKeyError = getErrorMessage(err, 'Kunde inte spara API-nyckeln. Kontrollera att nyckeln är giltig.');
@@ -190,9 +198,10 @@
 		}
 		apiKeyLoading = true;
 		try {
-			const data = (await apiKeyApi.update(apiKeyInput.trim())) as { masked: string };
+			const data = (await apiKeyApi.update(apiKeyInput.trim(), apiKeyFamilyCode.trim() || undefined)) as { masked: string };
 			apiKeyData = { masked: data.masked, hasKey: true };
 			apiKeyInput = '';
+			apiKeyFamilyCode = '';
 			apiKeySuccess = 'API-nyckeln har uppdaterats.';
 			showUpdateForm = false;
 		} catch (err) {
@@ -208,8 +217,9 @@
 		apiKeySuccess = '';
 		apiKeyLoading = true;
 		try {
-			await apiKeyApi.delete();
+			await apiKeyApi.delete(apiKeyFamilyCode.trim() || undefined);
 			apiKeyData = { masked: '', hasKey: false };
+			apiKeyFamilyCode = '';
 			apiKeySuccess = 'API-nyckeln har tagits bort.';
 		} catch (err) {
 			apiKeyError = getErrorMessage(err, 'Kunde inte ta bort API-nyckeln.');
@@ -229,8 +239,6 @@
 		try {
 			const child = (await childrenApi.create(newChildName.trim())) as Child;
 			childList = [...childList, child];
-			// Generate invite link immediately
-			await handleGenerateInvite(child.id);
 			newChildName = '';
 		} catch (err) {
 			childError = getErrorMessage(err, 'Kunde inte skapa barnprofilen.');
@@ -239,13 +247,29 @@
 		}
 	}
 
-	async function handleGenerateInvite(childId: string) {
+	async function handleSaveFamilyCode(e: Event) {
+		e.preventDefault();
+		familyCodeError = '';
+		familyCodeSuccess = '';
+		if (familyCodeNew.length < 6) {
+			familyCodeError = 'Den nya koden måste vara minst 6 tecken.';
+			return;
+		}
+		if (familyCodeNew !== familyCodeConfirm) {
+			familyCodeError = 'Koderna stämmer inte överens.';
+			return;
+		}
+		familyCodeLoading = true;
 		try {
-			const data = (await childrenApi.generateInvite(childId)) as { inviteURL?: string; inviteUrl?: string; inviteToken?: string };
-			const link = data.inviteURL || data.inviteUrl || data.inviteToken || '';
-			inviteLinks = { ...inviteLinks, [childId]: link };
+			await deviceApi.setCode(familyCodeNew, familyCodeCurrent.trim() || undefined);
+			familyCodeSuccess = 'Familjekoden är sparad. Alla enheter behöver låsas upp igen.';
+			familyCodeNew = '';
+			familyCodeConfirm = '';
+			familyCodeCurrent = '';
 		} catch (err) {
-			childError = getErrorMessage(err, 'Kunde inte skapa inbjudningslänk.');
+			familyCodeError = getErrorMessage(err, 'Kunde inte spara familjekoden.');
+		} finally {
+			familyCodeLoading = false;
 		}
 	}
 
@@ -264,18 +288,6 @@
 		} catch (err) {
 			childError = getErrorMessage(err, 'Kunde inte starta session.');
 		}
-	}
-
-	function copyToClipboard(text: string) {
-		navigator.clipboard.writeText(text).catch(() => {
-			// Fallback for older browsers
-			const el = document.createElement('textarea');
-			el.value = text;
-			document.body.appendChild(el);
-			el.select();
-			document.execCommand('copy');
-			document.body.removeChild(el);
-		});
 	}
 </script>
 
@@ -338,6 +350,16 @@
 							autocomplete="off"
 						/>
 					</div>
+					<div class="flex flex-col gap-1.5">
+						<Label for="apikey-familycode">Familjekod</Label>
+						<Input
+							id="apikey-familycode"
+							type="password"
+							bind:value={apiKeyFamilyCode}
+							placeholder="Lämna tom om ingen kod är satt"
+							autocomplete="off"
+						/>
+					</div>
 					<Button type="submit" disabled={apiKeyLoading}>
 						{apiKeyLoading ? 'Sparar och validerar...' : 'Spara API-nyckel'}
 					</Button>
@@ -355,6 +377,16 @@
 							type="password"
 							bind:value={apiKeyInput}
 							placeholder="sk-ant-..."
+							autocomplete="off"
+						/>
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<Label for="apikey-update-familycode">Familjekod</Label>
+						<Input
+							id="apikey-update-familycode"
+							type="password"
+							bind:value={apiKeyFamilyCode}
+							placeholder="Lämna tom om ingen kod är satt"
 							autocomplete="off"
 						/>
 					</div>
@@ -377,10 +409,20 @@
 				</form>
 			{:else}
 				<!-- Has key — show masked + actions -->
-				<div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
 					<div class="min-w-0">
 						<p class="text-xs text-muted-foreground">Sparad nyckel</p>
 						<p class="truncate font-mono text-sm text-foreground">{apiKeyData.masked}</p>
+					</div>
+					<div class="flex flex-col gap-1.5">
+						<Label for="apikey-view-familycode">Familjekod</Label>
+						<Input
+							id="apikey-view-familycode"
+							type="password"
+							bind:value={apiKeyFamilyCode}
+							placeholder="Lämna tom om ingen kod är satt"
+							autocomplete="off"
+						/>
 					</div>
 					<div class="flex gap-2">
 						<Button
@@ -410,12 +452,70 @@
 		</CardContent>
 	</Card>
 
+	<!-- Family code section -->
+	<Card class="mb-6">
+		<CardHeader>
+			<CardTitle>Familjekod</CardTitle>
+			<CardDescription>
+				Familjekoden låser upp enheten och krävs innan någon kan välja en profil. Sätt eller byt
+				den här.
+			</CardDescription>
+		</CardHeader>
+		<CardContent>
+			{#if familyCodeError}
+				<Alert variant="destructive" class="mb-4">
+					<AlertDescription>{familyCodeError}</AlertDescription>
+				</Alert>
+			{/if}
+			{#if familyCodeSuccess}
+				<Alert class="mb-4">
+					<AlertDescription>{familyCodeSuccess}</AlertDescription>
+				</Alert>
+			{/if}
+
+			<form onsubmit={handleSaveFamilyCode} class="flex flex-col gap-3">
+				<div class="flex flex-col gap-1.5">
+					<Label for="familycode-new">Ny kod</Label>
+					<Input
+						id="familycode-new"
+						type="password"
+						bind:value={familyCodeNew}
+						placeholder="Minst 6 tecken"
+						autocomplete="off"
+					/>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="familycode-confirm">Upprepa ny kod</Label>
+					<Input
+						id="familycode-confirm"
+						type="password"
+						bind:value={familyCodeConfirm}
+						autocomplete="off"
+					/>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<Label for="familycode-current">Nuvarande kod</Label>
+					<Input
+						id="familycode-current"
+						type="password"
+						bind:value={familyCodeCurrent}
+						placeholder="Lämna tom om ingen kod är satt"
+						autocomplete="off"
+					/>
+				</div>
+				<Button type="submit" disabled={familyCodeLoading}>
+					{familyCodeLoading ? 'Sparar...' : 'Spara'}
+				</Button>
+			</form>
+		</CardContent>
+	</Card>
+
 	<!-- Children section -->
 	<Card>
 		<CardHeader>
 			<CardTitle>Barn</CardTitle>
 			<CardDescription>
-				Lägg till ditt barn och skicka en inbjudningslänk.
+				Lägg till ditt barn för att skapa en profil.
 			</CardDescription>
 		</CardHeader>
 		<CardContent>
@@ -454,34 +554,9 @@
 												Se progress →
 											</a>
 										</div>
-									{:else}
-										<Button
-											variant="outline"
-											size="sm"
-											onclick={() => handleGenerateInvite(child.id)}
-										>
-											Skapa ny länk
-										</Button>
 									{/if}
 								</div>
 							</div>
-							{#if inviteLinks[child.id]}
-								<div class="mt-2 rounded bg-muted p-2">
-									<p class="mb-1 text-xs text-muted-foreground">Inbjudningslänk:</p>
-									<div class="flex items-center gap-2">
-										<code class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-											{inviteLinks[child.id]}
-										</code>
-										<Button
-											variant="outline"
-											size="sm"
-											onclick={() => copyToClipboard(inviteLinks[child.id])}
-										>
-											Kopiera
-										</Button>
-									</div>
-								</div>
-							{/if}
 						</div>
 					{/each}
 				</div>
