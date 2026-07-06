@@ -313,6 +313,19 @@ func TestUnlockNoCodeSet(t *testing.T) {
 	}
 }
 
+func TestUnlockDBErrorReturns500(t *testing.T) {
+	h := newTestHandler(&fakeStore{settingsErr: errors.New("connection refused")})
+	rr := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/api/device/unlock", strings.NewReader(`{"code":"hemlig1"}`))
+	h.Unlock(rr, r)
+	if rr.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d, want 500 on DB error", rr.Code)
+	}
+	if !strings.Contains(rr.Body.String(), "Internt fel") {
+		t.Errorf("body %s", rr.Body.String())
+	}
+}
+
 func TestUnlockRateLimited(t *testing.T) {
 	h := newTestHandler(&fakeStore{settings: settingsWithCode(t, "hemlig1", 1)})
 	var last *httptest.ResponseRecorder

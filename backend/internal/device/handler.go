@@ -48,8 +48,15 @@ func (h *Handler) Unlock(w http.ResponseWriter, r *http.Request) {
 	}
 
 	settings, err := h.store.GetFamilySettings(r.Context())
-	if err != nil {
+	switch {
+	case err == nil:
+		// fall through to code comparison below
+	case errors.Is(err, pgx.ErrNoRows):
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Ingen familjekod är satt ännu"})
+		return
+	default:
+		log.Error().Err(err).Msg("failed to load family settings")
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Internt fel"})
 		return
 	}
 
