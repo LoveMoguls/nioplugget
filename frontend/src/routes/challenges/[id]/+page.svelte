@@ -2,11 +2,11 @@
 	import { onMount } from 'svelte';
 	import { goto, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { Card, CardHeader, CardTitle, CardDescription } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { challenges, sessions } from '$lib/api';
 	import { user, isChild } from '$lib/stores/auth';
 	import StarAnimation from '$lib/components/challenges/StarAnimation.svelte';
+	import { XPBar } from '$lib/components/arcade';
 
 	interface ChallengeExercise {
 		id: string;
@@ -115,55 +115,61 @@
 	{:else if error}
 		<p class="text-red-500">{error}</p>
 	{:else if challenge}
-		<div class="mb-6">
-			<div class="mb-2 text-4xl">{challenge.coverEmoji}</div>
-			<h1 class="mb-1 text-2xl font-bold">{challenge.title}</h1>
+		<div class="mb-6 text-center">
+			<div class="hero-emoji mb-2 text-6xl">{challenge.coverEmoji}</div>
+			<h1 class="font-display mb-1 text-2xl font-bold text-foreground">{challenge.title}</h1>
 			<p class="text-muted-foreground text-sm">{challenge.description}</p>
-			<p class="mt-2 text-sm font-medium text-primary">
-				{completedCount()} av {challenge.exercises.length} klara · {totalXp()} XP
-			</p>
+			<div class="mx-auto mt-4 max-w-xs">
+				<XPBar current={completedCount()} max={challenge.exercises.length} label="Övningar" />
+			</div>
+			<p class="mt-2 text-sm font-semibold text-gold">{totalXp()} XP</p>
 		</div>
 
 		<div class="space-y-4">
 			{#each challenge.exercises as exercise, i}
 				{@const unlocked = isUnlocked(i)}
-				<Card
-					class="hover:shadow-md {exercise.completed
-						? 'border-emerald-200 bg-emerald-50/40'
-						: ''} {!unlocked ? 'opacity-60' : ''}"
+				<div
+					class="flex flex-row items-center justify-between gap-4 rounded-xl border p-5
+						{exercise.completed ? 'border-success/40 bg-success/5' : 'border-border bg-card'}
+						{!unlocked ? 'opacity-60' : ''}"
 				>
-					<CardHeader class="flex flex-row items-center justify-between gap-4">
-						<div class="min-w-0 flex-1">
-							<div class="flex items-center gap-2">
-								<CardTitle class="text-lg">{exercise.title}</CardTitle>
-								{#if exercise.completed && exercise.stars}
-									<span class="text-sm text-amber-500">{starDisplay(exercise.stars)}</span>
-								{/if}
-							</div>
-							<CardDescription class="mt-1">{exercise.description}</CardDescription>
+					<div class="min-w-0 flex-1">
+						<div class="flex items-center gap-2">
+							<p class="font-display text-lg font-bold text-foreground">{exercise.title}</p>
+							{#if exercise.completed && exercise.stars}
+								<span class="text-sm tracking-wider text-gold">{starDisplay(exercise.stars)}</span>
+							{/if}
 						</div>
-						{#if exercise.completed && exercise.sessionId}
-							<Button
-								variant="outline"
-								onclick={() => goto(`/chat/${exercise.sessionId}?returnTo=/challenges/${challenge!.id}`)}
-								class="min-h-[44px] shrink-0"
-							>
-								Fortsätt
-							</Button>
-						{:else if unlocked}
-							<Button
-								onclick={() => startExercise(exercise.id)}
-								disabled={starting !== ''}
-								class="min-h-[44px] shrink-0"
-							>
-								{starting === exercise.id ? 'Startar...' : 'Starta'}
-							</Button>
-						{:else}
-							<Button variant="outline" disabled class="min-h-[44px] shrink-0">🔒 Låst</Button>
-						{/if}
-					</CardHeader>
-				</Card>
+						<p class="mt-1 text-sm text-muted-foreground">{exercise.description}</p>
+					</div>
+					{#if exercise.completed && exercise.sessionId}
+						<Button
+							variant="outline"
+							onclick={() => goto(`/chat/${exercise.sessionId}?returnTo=/challenges/${challenge!.id}`)}
+							class="min-h-[44px] shrink-0"
+						>
+							Fortsätt
+						</Button>
+					{:else if unlocked}
+						<Button
+							onclick={() => startExercise(exercise.id)}
+							disabled={starting !== ''}
+							class="min-h-[44px] shrink-0"
+						>
+							{starting === exercise.id ? 'Startar...' : 'Starta'}
+						</Button>
+					{:else}
+						<Button variant="outline" disabled class="min-h-[44px] shrink-0">🔒 Låst</Button>
+					{/if}
+				</div>
 			{/each}
 		</div>
 	{/if}
 </div>
+
+<style>
+	.hero-emoji {
+		display: inline-block;
+		filter: drop-shadow(0 0 18px oklch(0.85 0.17 90 / 0.4));
+	}
+</style>

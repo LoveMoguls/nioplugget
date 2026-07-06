@@ -1,32 +1,34 @@
 <div class="mb-3 flex justify-start">
-	<div class="flex items-center gap-1 rounded-2xl rounded-bl-md bg-muted px-4 py-3 shadow-sm">
-		<span class="typing-dot h-2 w-2 rounded-full bg-muted-foreground/50"></span>
-		<span class="typing-dot animation-delay-200 h-2 w-2 rounded-full bg-muted-foreground/50"></span>
-		<span class="typing-dot animation-delay-400 h-2 w-2 rounded-full bg-muted-foreground/50"></span>
+	<div class="flex items-center gap-1 rounded-2xl rounded-bl-md border border-border bg-card px-4 py-3 shadow-sm">
+		<span class="typing-dot h-2 w-2 rounded-full bg-primary"></span>
+		<span class="typing-dot h-2 w-2 rounded-full bg-primary"></span>
+		<span class="typing-dot h-2 w-2 rounded-full bg-primary"></span>
 	</div>
 </div>
 
 <style>
-	.typing-dot {
-		animation: bounce 1.4s infinite ease-in-out;
-	}
-
-	.animation-delay-200 {
-		animation-delay: 0.2s;
-	}
-
-	.animation-delay-400 {
-		animation-delay: 0.4s;
-	}
-
-	@keyframes bounce {
-		0%,
-		80%,
-		100% {
-			transform: translateY(0);
+	@media (prefers-reduced-motion: no-preference) {
+		.typing-dot {
+			animation: bounce-dot 1s infinite;
 		}
-		40% {
-			transform: translateY(-6px);
+
+		.typing-dot:nth-child(2) {
+			animation-delay: 0.15s;
+		}
+
+		.typing-dot:nth-child(3) {
+			animation-delay: 0.3s;
+		}
+
+		@keyframes bounce-dot {
+			0%,
+			60%,
+			100% {
+				transform: translateY(0);
+			}
+			30% {
+				transform: translateY(-6px);
+			}
 		}
 	}
 </style>

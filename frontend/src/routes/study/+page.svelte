@@ -9,6 +9,7 @@
 	import { GlowCard } from '$lib/components/arcade';
 
 	const LIME_GRADIENT = 'linear-gradient(135deg, oklch(0.85 0.22 135), oklch(0.85 0.15 195))';
+	const GOLD_GRADIENT = 'linear-gradient(135deg, oklch(0.85 0.17 90), oklch(0.85 0.15 195))';
 
 	const SUBJECT_GRADIENTS: Record<string, string> = {
 		biologi: 'linear-gradient(135deg, oklch(0.35 0.10 155), oklch(0.25 0.06 200))',
@@ -196,14 +197,14 @@
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 			{#each challengeList as challenge}
 				<a href="/challenges/{challenge.id}" class="block transition-transform hover:scale-[1.02]">
-					<div class="h-full rounded-lg border border-border bg-secondary/40 p-4 transition-colors hover:bg-secondary/70">
-						<div class="mb-1 text-2xl">{challenge.coverEmoji}</div>
-						<p class="font-display font-bold text-foreground">{challenge.title}</p>
+					<GlowCard gradient={GOLD_GRADIENT}>
+						<div class="mb-1 text-5xl">{challenge.coverEmoji}</div>
+						<p class="font-display text-lg font-bold text-foreground">{challenge.title}</p>
 						<p class="mt-1 text-sm text-muted-foreground">{challenge.description}</p>
 						<p class="mt-2 text-xs text-muted-foreground/80">
 							{challenge.createdBy} · {formatCreated(challenge.createdAt)}
 						</p>
-					</div>
+					</GlowCard>
 				</a>
 			{/each}
 

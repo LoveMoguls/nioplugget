@@ -38,8 +38,8 @@
 		{disabled}
 		placeholder="Skriv ditt svar..."
 		rows={1}
-		class="flex-1 resize-none rounded-xl border border-input bg-card px-4 py-3 text-sm
-			focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring
+		class="flex-1 resize-none rounded-xl border border-input bg-input/30 px-4 py-3 text-sm text-foreground
+			focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring
 			disabled:cursor-not-allowed disabled:opacity-50"
 	></textarea>
 	<button
@@ -47,6 +47,7 @@
 		disabled={disabled || !message.trim()}
 		class="min-h-[44px] shrink-0 rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-foreground
 			hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+		style="box-shadow: var(--glow-cyan);"
 	>
 		Skicka
 	</button>

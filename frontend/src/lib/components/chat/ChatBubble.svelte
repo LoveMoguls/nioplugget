@@ -11,7 +11,7 @@
 	<div
 		class="max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
 		{role === 'user'
-			? 'rounded-br-md bg-gradient-to-br from-violet-500 to-indigo-600 text-white'
+			? 'user-bubble rounded-br-md'
 			: 'rounded-bl-md border border-border bg-card text-foreground'}"
 	>
 		{#each content.split('\n') as line, i}
@@ -20,3 +20,10 @@
 		{/each}
 	</div>
 </div>
+
+<style>
+	.user-bubble {
+		background: linear-gradient(135deg, oklch(0.45 0.1 195), oklch(0.38 0.08 220));
+		color: oklch(0.97 0.005 285);
+	}
+</style>

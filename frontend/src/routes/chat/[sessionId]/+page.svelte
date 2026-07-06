@@ -173,8 +173,8 @@
 		<!-- Score card -->
 		{#if scoreResult}
 			<div class="mx-auto mt-6 max-w-sm rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-				<p class="text-3xl tracking-wider text-primary">{scoreStars(scoreResult.score)}</p>
-				<p class="mt-2 text-lg font-semibold text-card-foreground">{scoreResult.score} av 5</p>
+				<p class="text-3xl tracking-wider text-gold">{scoreStars(scoreResult.score)}</p>
+				<p class="font-display mt-2 text-lg font-bold text-card-foreground">{scoreResult.score} av 5</p>
 				{#if scoreResult.feedback}
 					<p class="mt-2 text-sm text-muted-foreground">{scoreResult.feedback}</p>
 				{/if}
