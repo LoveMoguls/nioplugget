@@ -295,13 +295,13 @@
 	<title>Dashboard — Nioplugget</title>
 </svelte:head>
 
-<div class="mx-auto max-w-4xl px-4 py-8">
-	<h1 class="mb-6 text-2xl font-bold text-foreground">Dashboard</h1>
+<div class="mx-auto max-w-4xl px-4 py-10">
+	<h1 class="font-display mb-8 text-2xl font-bold text-foreground sm:text-3xl">Dashboard</h1>
 
 	<!-- API Key section -->
-	<Card class="mb-6">
+	<Card class="mb-8">
 		<CardHeader>
-			<CardTitle>Claude API-nyckel</CardTitle>
+			<CardTitle class="font-display text-lg font-bold">Claude API-nyckel</CardTitle>
 			<CardDescription>
 				För att ditt barn ska kunna använda Nioplugget behöver du koppla din Claude API-nyckel.
 			</CardDescription>
@@ -453,9 +453,9 @@
 	</Card>
 
 	<!-- Family code section -->
-	<Card class="mb-6">
+	<Card class="mb-8">
 		<CardHeader>
-			<CardTitle>Familjekod</CardTitle>
+			<CardTitle class="font-display text-lg font-bold">Familjekod</CardTitle>
 			<CardDescription>
 				Familjekoden låser upp enheten och krävs innan någon kan välja en profil. Sätt eller byt
 				den här.
@@ -511,9 +511,9 @@
 	</Card>
 
 	<!-- Children section -->
-	<Card>
+	<Card class="mb-8">
 		<CardHeader>
-			<CardTitle>Barn</CardTitle>
+			<CardTitle class="font-display text-lg font-bold">Barn</CardTitle>
 			<CardDescription>
 				Lägg till ditt barn för att skapa en profil.
 			</CardDescription>
@@ -579,9 +579,9 @@
 	</Card>
 
 	<!-- Challenges section -->
-	<Card class="mt-6">
+	<Card>
 		<CardHeader>
-			<CardTitle>Utmaningar</CardTitle>
+			<CardTitle class="font-display text-lg font-bold">Utmaningar</CardTitle>
 			<CardDescription>
 				Fota, släpp en PDF eller klistra in text från vilken läxa som helst — AI:n gör en interaktiv utmaning av den.
 			</CardDescription>

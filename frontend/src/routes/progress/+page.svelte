@@ -59,11 +59,33 @@
 		data ? data.subjects.some((s) => s.totalSessions > 0) : false
 	);
 
+	// Summary stats derived from the already loaded progress data
+	let totalSessions = $derived(
+		data ? data.subjects.reduce((sum, s) => sum + s.totalSessions, 0) : 0
+	);
+
+	let totalExercises = $derived(
+		data ? data.subjects.reduce((sum, s) => sum + s.uniqueExercises, 0) : 0
+	);
+
+	let overallAvgScore = $derived.by(() => {
+		if (!data) return 0;
+		let weighted = 0;
+		let sessions = 0;
+		for (const s of data.subjects) {
+			if (s.totalSessions > 0) {
+				weighted += s.avgScore * s.totalSessions;
+				sessions += s.totalSessions;
+			}
+		}
+		return sessions > 0 ? weighted / sessions : 0;
+	});
+
 	function scoreColor(score: number): string {
 		if (score === 0) return 'bg-muted';
-		if (score >= 4) return 'bg-emerald-200';
-		if (score >= 3) return 'bg-amber-200';
-		return 'bg-rose-200';
+		if (score >= 4) return 'bg-chart-2';
+		if (score >= 3) return 'bg-chart-4';
+		return 'bg-chart-3';
 	}
 
 	onMount(async () => {
@@ -89,10 +111,10 @@
 
 <div class="mx-auto max-w-4xl px-4 py-8">
 	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-2xl font-bold text-foreground">Min progress</h1>
+		<h1 class="font-display text-2xl font-bold text-foreground sm:text-3xl">Min progress</h1>
 		<a
 			href="/study"
-			class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+			class="flex min-h-[44px] items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
 		>
 			Tillbaka till ämnen
 		</a>
@@ -101,7 +123,7 @@
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else if error}
-		<p class="text-red-500">{error}</p>
+		<p class="text-destructive">{error}</p>
 	{:else if !hasAnySessions}
 		<Card>
 			<CardContent class="py-8 text-center">
@@ -117,12 +139,43 @@
 			</CardContent>
 		</Card>
 	{:else if data}
+		<!-- Stat tiles -->
+		<div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+			<div class="rounded-xl border border-border bg-card p-5 text-center">
+				<p
+					class="font-display text-4xl font-extrabold text-success"
+					style="text-shadow: var(--glow-lime);"
+				>
+					{totalSessions}
+				</p>
+				<p class="mt-1 text-sm text-muted-foreground">Genomförda pass</p>
+			</div>
+			<div class="rounded-xl border border-border bg-card p-5 text-center">
+				<p
+					class="font-display text-4xl font-extrabold text-gold"
+					style="text-shadow: var(--glow-gold);"
+				>
+					{overallAvgScore > 0 ? overallAvgScore.toFixed(1) : '–'}
+				</p>
+				<p class="mt-1 text-sm text-muted-foreground">Snittbetyg</p>
+			</div>
+			<div class="rounded-xl border border-border bg-card p-5 text-center">
+				<p
+					class="font-display text-4xl font-extrabold text-primary"
+					style="text-shadow: var(--glow-cyan);"
+				>
+					{totalExercises}
+				</p>
+				<p class="mt-1 text-sm text-muted-foreground">Olika övningar</p>
+			</div>
+		</div>
+
 		<!-- Per-subject cards -->
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			{#each data.subjects as subject (subject.id)}
 				<Card class="h-full">
 					<CardHeader class="pb-2">
-						<CardTitle class="text-lg">{subject.name}</CardTitle>
+						<CardTitle class="font-display text-lg font-bold">{subject.name}</CardTitle>
 						<CardDescription>
 							{subject.totalSessions} pass genomförda · Snittbetyg: {subject.avgScore > 0
 								? subject.avgScore.toFixed(1)
@@ -165,7 +218,7 @@
 		<!-- Strengths and weaknesses -->
 		{#if strengths.length > 0 || weaknesses.length > 0}
 			<div class="mt-8">
-				<h2 class="mb-4 text-xl font-semibold text-foreground">Styrkor och svagheter</h2>
+				<h2 class="font-display mb-4 text-xl font-bold text-foreground">Styrkor och svagheter</h2>
 
 				{#if strengths.length > 0}
 					<div class="mb-4">
@@ -173,7 +226,7 @@
 						<div class="space-y-1">
 							{#each strengths as topic}
 								<p class="text-sm text-foreground">
-									<span class="text-emerald-600">✓</span>
+									<span class="text-success">✓</span>
 									{topic.name} ({topic.avgScore.toFixed(1)}) — {topic.subjectName}
 								</p>
 							{/each}
@@ -187,7 +240,7 @@
 						<div class="space-y-1">
 							{#each weaknesses as topic}
 								<p class="text-sm text-foreground">
-									<span class="text-rose-500">○</span>
+									<span class="text-accent">○</span>
 									{topic.name} ({topic.avgScore.toFixed(1)}) — {topic.subjectName}
 								</p>
 							{/each}

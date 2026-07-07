@@ -35,8 +35,8 @@
 
 <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
 	<Card class="w-full max-w-md">
-		<CardHeader>
-			<CardTitle>Logga in</CardTitle>
+		<CardHeader class="gap-1.5 pt-2 pb-2">
+			<CardTitle class="font-display text-xl font-bold">Logga in</CardTitle>
 			<CardDescription>Logga in på ditt föräldrakonto.</CardDescription>
 		</CardHeader>
 		<CardContent>

@@ -49,8 +49,8 @@
 
 <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
 	<Card class="w-full max-w-md">
-		<CardHeader>
-			<CardTitle>Koppla Claude API-nyckel</CardTitle>
+		<CardHeader class="gap-1.5 pt-2 pb-2">
+			<CardTitle class="font-display text-xl font-bold">Koppla Claude API-nyckel</CardTitle>
 			<CardDescription>
 				För att ditt barn ska kunna använda Nioplugget behöver du koppla din Claude API-nyckel.
 				Hämta en nyckel från

@@ -59,9 +59,9 @@
 
 	function scoreColor(score: number): string {
 		if (score === 0) return 'bg-muted';
-		if (score >= 4) return 'bg-emerald-200';
-		if (score >= 3) return 'bg-amber-200';
-		return 'bg-rose-200';
+		if (score >= 4) return 'bg-chart-2';
+		if (score >= 3) return 'bg-chart-4';
+		return 'bg-chart-3';
 	}
 
 	function formatDate(iso: string): string {
@@ -102,7 +102,7 @@
 	<title>Barnets progress — Nioplugget</title>
 </svelte:head>
 
-<div class="mx-auto max-w-4xl px-4 py-8">
+<div class="mx-auto max-w-4xl px-4 py-10">
 	<a
 		href="/dashboard"
 		class="mb-4 inline-block text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -110,14 +110,14 @@
 		← Tillbaka till dashboard
 	</a>
 
-	<h1 class="mb-6 text-2xl font-bold text-foreground">Progress</h1>
+	<h1 class="font-display mb-8 text-2xl font-bold text-foreground sm:text-3xl">Progress</h1>
 
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else if error}
 		<Card>
 			<CardContent class="py-8 text-center">
-				<p class="text-red-500">{error}</p>
+				<p class="text-destructive">{error}</p>
 			</CardContent>
 		</Card>
 	{:else if progressData}
@@ -130,7 +130,7 @@
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<p class="text-2xl font-bold text-foreground">{recentSessionCount}</p>
+					<p class="font-display text-3xl font-extrabold text-foreground">{recentSessionCount}</p>
 				</CardContent>
 			</Card>
 
@@ -163,7 +163,7 @@
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<p class="text-2xl font-bold text-foreground">{totalSessions}</p>
+					<p class="font-display text-3xl font-extrabold text-foreground">{totalSessions}</p>
 				</CardContent>
 			</Card>
 		</div>
@@ -171,7 +171,7 @@
 		<!-- Per-subject topic breakdowns -->
 		{#each progressData.subjects.filter((s) => s.totalSessions > 0) as subject (subject.id)}
 			<div class="mb-6">
-				<h3 class="mb-3 text-lg font-semibold text-foreground">{subject.name}</h3>
+				<h3 class="font-display mb-3 text-lg font-bold text-foreground">{subject.name}</h3>
 				<div class="space-y-2">
 					{#each subject.topics as topic (topic.id)}
 						<div class="flex items-center gap-2">
@@ -199,7 +199,7 @@
 		{/each}
 
 		<!-- Session history -->
-		<h2 class="mb-4 mt-8 text-xl font-semibold text-foreground">Sessionshistorik</h2>
+		<h2 class="font-display mb-4 mt-10 text-xl font-bold text-foreground">Sessionshistorik</h2>
 
 		{#if sessions.length === 0}
 			<p class="text-sm text-muted-foreground">Inga genomförda pass ännu.</p>
@@ -207,7 +207,7 @@
 			<div class="space-y-2">
 				{#each sessions as session (session.id)}
 					<div
-						class="flex items-center justify-between rounded-lg border border-border p-3"
+						class="flex items-center justify-between rounded-lg border border-border bg-card p-3"
 					>
 						<div>
 							<p class="font-medium text-foreground">{session.exerciseTitle}</p>
