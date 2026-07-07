@@ -78,7 +78,7 @@
 					type="button"
 					onclick={() => selectProfile(profile)}
 					disabled={selectingId !== ''}
-					class="group flex w-24 flex-col items-center gap-2 rounded-lg p-2 text-center disabled:opacity-50"
+					class="group flex w-28 flex-col items-center gap-2 rounded-lg p-2 text-center disabled:opacity-50"
 				>
 					<div
 						class="avatar-ring rounded-full p-[3px] transition-transform duration-200 group-hover:scale-[1.08] group-hover:[box-shadow:var(--glow-cyan)] group-focus-visible:scale-[1.08] group-focus-visible:[box-shadow:var(--glow-cyan)]"

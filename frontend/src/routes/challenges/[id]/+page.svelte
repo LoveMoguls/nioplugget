@@ -113,7 +113,7 @@
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else if error}
-		<p class="text-red-500">{error}</p>
+		<p class="text-destructive">{error}</p>
 	{:else if challenge}
 		<div class="mb-6 text-center">
 			<div class="hero-emoji mb-2 text-6xl">{challenge.coverEmoji}</div>

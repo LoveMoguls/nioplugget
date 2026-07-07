@@ -134,8 +134,8 @@
 
 	<!-- End session confirmation -->
 	{#if showEndConfirm}
-		<div class="border-b border-border bg-accent px-4 py-3 text-sm">
-			<p class="mb-2 font-medium text-accent-foreground">Är du säker på att du vill avsluta passet?</p>
+		<div class="border-b border-border bg-secondary px-4 py-3 text-sm text-foreground">
+			<p class="mb-2 font-medium text-foreground">Är du säker på att du vill avsluta passet?</p>
 			<div class="flex gap-2">
 				<button
 					onclick={handleEndSession}

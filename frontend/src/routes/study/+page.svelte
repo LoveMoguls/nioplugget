@@ -139,7 +139,7 @@
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else if error}
-		<p class="text-red-500">{error}</p>
+		<p class="text-destructive">{error}</p>
 	{:else}
 		{#if dueReviews.length > 0}
 			<div class="mb-8">
@@ -191,7 +191,7 @@
 			<span
 				class="font-display inline-flex items-center rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-sm font-bold text-gold"
 			>
-				🏆 {challengeList.length} utmaningar
+				🏆 {challengeList.length} {challengeList.length === 1 ? 'utmaning' : 'utmaningar'}
 			</span>
 		</div>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -228,7 +228,7 @@
 						<CardTitle class="text-base">Skapa egen utmaning</CardTitle>
 						<button
 							onclick={() => (showCreate = false)}
-							class="rounded-lg p-2 text-muted-foreground hover:bg-accent"
+							class="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
 							aria-label="Stäng"
 						>✕</button>
 					</div>

@@ -16,7 +16,8 @@
 
 <button
 	{...rest}
-	class="press-btn font-display rounded-xl px-8 py-3 text-lg font-bold tracking-wide uppercase disabled:cursor-not-allowed disabled:opacity-50 {rest.class ?? ''}"
+	type={rest.type ?? 'button'}
+	class="press-btn font-display rounded-xl px-8 py-3 text-lg font-bold tracking-wide uppercase focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 {rest.class ?? ''}"
 	style="{styles[variant]} {rest.style ?? ''}"
 >
 	{@render children()}

@@ -70,13 +70,13 @@
 		&larr; Tillbaka till {subjectName || 'områden'}
 	</a>
 
-	<h1 class="mb-2 text-2xl font-bold">{topicName || 'Välj övning'}</h1>
+	<h1 class="font-display mb-2 text-2xl font-bold">{topicName || 'Välj övning'}</h1>
 	<p class="text-muted-foreground mb-6 text-sm">{subjectName}</p>
 
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else if error}
-		<p class="text-red-500">{error}</p>
+		<p class="text-destructive">{error}</p>
 	{:else}
 		<div class="space-y-4">
 			{#each exercises as exercise}

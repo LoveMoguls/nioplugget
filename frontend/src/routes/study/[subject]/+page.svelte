@@ -44,12 +44,12 @@
 		&larr; Tillbaka till ämnen
 	</a>
 
-	<h1 class="mb-6 text-2xl font-bold">{subjectName || 'Välj område'}</h1>
+	<h1 class="font-display mb-6 text-2xl font-bold">{subjectName || 'Välj område'}</h1>
 
 	{#if loading}
 		<p class="text-muted-foreground">Laddar...</p>
 	{:else if error}
-		<p class="text-red-500">{error}</p>
+		<p class="text-destructive">{error}</p>
 	{:else}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 			{#each topics as topic}

@@ -21,7 +21,7 @@
 	});
 </script>
 
-<div class="min-h-screen bg-background font-sans antialiased">
+<div class="min-h-screen font-sans antialiased">
 	{#if $isLoggedIn}
 		<nav class="sticky top-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-md" style="padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);">
 			<div class="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
